@@ -50,6 +50,9 @@ class ViewController: UIViewController {
   @IBOutlet weak var toolbar: UIToolbar!
   @IBOutlet weak var forcus: UIImageView!
   var maskLayer: CALayer = CALayer()
+    var device: MTLDevice!
+    var commandQueue: MTLCommandQueue!
+    var computePipelineState: MTLComputePipelineState!
   let selection = UISelectionFeedbackGenerator()
   var detector = try! VNCoreMLModel(for: mlModel)
   var session: AVCaptureSession!
@@ -82,15 +85,13 @@ class ViewController: UIViewController {
 
   enum Task {
     case detect
-    case human
     case seg
   }
 
   var task: Task = .detect
   var confidenceThreshold: Float = 0.25
   var iouThreshold: Float = 0.4
-  var tracking = false
-  var tracker = TrackingModel()
+let maskProcessingQueue = DispatchQueue(label: "com.yolo.maskProcessingQueue", qos: .utility)
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -194,47 +195,6 @@ class ViewController: UIViewController {
       default:
         break
       }
-    case .human:
-      switch segmentedControl.selectedSegmentIndex {
-      case 0:
-        self.labelName.text = "YOLOv8n"
-        if #available(iOS 15.0, *) {
-          mlModel = try! yolov8n_human(configuration: .init()).model
-        } else {
-          // Fallback on earlier versions
-        }
-      case 1:
-        self.labelName.text = "YOLOv8s"
-        if #available(iOS 15.0, *) {
-          mlModel = try! yolov8s_human(configuration: .init()).model
-        } else {
-          // Fallback on earlier versions
-        }
-      case 2:
-        self.labelName.text = "YOLOv8m"
-        if #available(iOS 15.0, *) {
-          mlModel = try! yolov8m_human(configuration: .init()).model
-        } else {
-          // Fallback on earlier versions
-        }
-      case 3:
-        self.labelName.text = "YOLOv8l"
-        if #available(iOS 15.0, *) {
-          mlModel = try! yolov8l_human(configuration: .init()).model
-        } else {
-          // Fallback on earlier versions
-        }
-      case 4:
-        self.labelName.text = "YOLOv8x"
-        if #available(iOS 15.0, *) {
-          mlModel = try! yolov8x_human(configuration: .init()).model
-        } else {
-          // Fallback on earlier versions
-        }
-
-      default:
-        break
-      }
     case .seg:
       switch segmentedControl.selectedSegmentIndex {
       case 0:
@@ -319,16 +279,6 @@ class ViewController: UIViewController {
         self.setModel()
       }
     case 1:
-      if self.task != .human {
-        self.task = .human
-        for i in 0..<self.boundingBoxViews.count {
-          self.boundingBoxViews[i].hide()
-        }
-        self.trackingLabel.isHidden = false
-        self.trackingSwitch.isHidden = false
-        self.setModel()
-      }
-    case 2:
       if self.task != .seg {
         self.task = .seg
         for i in 0..<self.boundingBoxViews.count {
@@ -344,12 +294,12 @@ class ViewController: UIViewController {
   }
 
   @IBAction func TrackingSwitch(_ sender: UISwitch) {
-    tracking.toggle()
-    if tracking {
-      sender.isOn = true
-    } else {
-      sender.isOn = false
-    }
+//    tracking.toggle()
+//    if tracking {
+//      sender.isOn = true
+//    } else {
+//      sender.isOn = false
+//    }
   }
 
   @IBAction func takePhoto(_ sender: Any?) {
@@ -578,9 +528,9 @@ class ViewController: UIViewController {
     case .detect:
       DispatchQueue.main.async {
         if let results = request.results as? [VNRecognizedObjectObservation] {
-          self.show(predictions: results, persons: [], processedBoxAndMasks: [])
+          self.show(predictions: results, processedBoxAndMasks: [])
         } else {
-          self.show(predictions: [], persons: [], processedBoxAndMasks: [])
+          self.show(predictions: [], processedBoxAndMasks: [])
         }
 
         // Measure FPS
@@ -591,49 +541,19 @@ class ViewController: UIViewController {
         self.labelFPS.text = String(format: "%.1f FPS - %.1f ms", 1 / self.t4, self.t2 * 1000)  // t2 seconds to ms
         self.t3 = CACurrentMediaTime()
       }
-    case .human:
-      if let results = request.results as? [VNCoreMLFeatureValueObservation] {
-        DispatchQueue.main.async {
-
-          if let prediction = results.first?.featureValue.multiArrayValue {
-
-            let pred = PostProcessHuman(
-              prediction: prediction, confidenceThreshold: self.confidenceThreshold,
-              iouThreshold: self.iouThreshold)
-            var persons: [Person] = []
-            if !self.tracking {
-              persons = toPerson(boxesAndScoresAndFeatures: pred)
-            } else {
-              persons = self.tracker.track(boxesAndScoresAndFeatures: pred)
-            }
-            self.show(predictions: [], persons: persons, processedBoxAndMasks: [])
-          } else {
-            self.show(predictions: [], persons: [], processedBoxAndMasks: [])
-          }
-          if self.t1 < 10.0 {  // valid dt
-            self.t2 = self.t1 * 0.05 + self.t2 * 0.95  // smoothed inference time
-          }
-          self.t4 = (CACurrentMediaTime() - self.t3) * 0.05 + self.t4 * 0.95  // smoothed delivered FPS
-          self.labelFPS.text = String(format: "%.1f FPS - %.1f ms", 1 / self.t4, self.t2 * 1000)  // t2 seconds to ms
-          self.t3 = CACurrentMediaTime()
-        }
-      }
     case .seg:
       if let results = request.results as? [VNCoreMLFeatureValueObservation] {
         DispatchQueue.main.async { [self] in
           guard results.count == 2 else { return }
           let masks = results[0].featureValue.multiArrayValue
           let pred = results[1].featureValue.multiArrayValue
+            let a = Date()
+
           let processed = getBoundingBoxesAndMasks(
             feature: pred!, confidenceThreshold: 0.25, iouThreshold: 0.4)
 
-          self.show(predictions: [], persons: [], processedBoxAndMasks: processed)
-          DispatchQueue.main.async {
-            let a = Date()
-            self.updateMaskAndBoxes(detectedObjects: processed, maskArray: masks!)
-            print(Date().timeIntervalSince(a))
-          }
-
+          self.show(predictions: [], processedBoxAndMasks: processed)
+          self.updateMaskAndBoxes(detectedObjects: processed, maskArray: masks!)
           if self.t1 < 10.0 {  // valid dt
             self.t2 = self.t1 * 0.05 + self.t2 * 0.95  // smoothed inference time
           }
@@ -713,7 +633,7 @@ class ViewController: UIViewController {
   }
 
   func show(
-    predictions: [VNRecognizedObjectObservation], persons: [Person],
+    predictions: [VNRecognizedObjectObservation],
     processedBoxAndMasks: [(CGRect, Int, Float, MLMultiArray)]
   ) {
     let width = videoPreview.bounds.width
@@ -742,8 +662,6 @@ class ViewController: UIViewController {
     switch task {
     case .detect:
       resultCount = predictions.count
-    case .human:
-      resultCount = persons.count
     case .seg:
       resultCount = processedBoxAndMasks.count
     }
@@ -766,23 +684,6 @@ class ViewController: UIViewController {
           label = String(format: "%@ %.1f", bestClass, confidence * 100)
           boxColor = colors[bestClass] ?? UIColor.white
           alpha = CGFloat((confidence - 0.2) / (1.0 - 0.2) * 0.9)
-        case .human:
-          let person = persons[i]
-          let box = person.box
-          rect = CGRect(
-            x: box.minX / 640, y: box.minY / 640, width: box.width / 640, height: box.height / 640)
-          confidence = CGFloat(person.score)
-          if person.index == -1 {
-            label = "person"
-          } else {
-            label = String(format: "%@ %.1f", "ID: \(person.index)", confidence * 100)
-          }
-          innerTexts =
-            "weight: " + String(format: "%.2f", person.weight) + "\n" + "height: "
-            + String(format: "%.2f", person.height) + "\n" + "age: " + String(person.age) + "\n"
-            + person.gender + ": " + String(format: "%.2f", person.genderConfidence) + "\n"
-            + person.race + ": " + String(format: "%.2f", person.raceConfidence)
-          boxColor = person.color
         case .seg:
           let processed = processedBoxAndMasks[i]
           let box = processed.0
@@ -847,7 +748,7 @@ class ViewController: UIViewController {
         displayRect = VNImageRectForNormalizedRect(displayRect, Int(width), Int(height))
 
         boundingBoxViews[i].show(
-          frame: displayRect, label: label, color: boxColor, alpha: alpha, innerTexts: innerTexts)
+          frame: displayRect, label: label, color: boxColor, alpha: alpha)
 
         if developerMode {
           if save_detections {

@@ -4,9 +4,10 @@
 
 // These functions are designed to post-process inference results from the YOLOv8-Segment model in the Ultralytics YOLO app to display segment masks.
 
+//  Access the source code: https://github.com/ultralytics/yolo-ios-app
+
 import Accelerate
 import MetalPerformanceShaders
-//  Access the source code: https://github.com/ultralytics/yolo-ios-app
 import UIKit
 import Vision
 
@@ -46,10 +47,9 @@ extension ViewController {
     let maskConfidenceLength = 32
     let numClasses = numFeatures - boxFeatureLength - maskConfidenceLength
 
-    var results = [(CGRect, Float, Int, MLMultiArray)]()
+    var results = [(CGRect, Int, Float, MLMultiArray)]()
     let featurePointer = feature.dataPointer.assumingMemoryBound(to: Float.self)
 
-    let queue = DispatchQueue.global(qos: .userInitiated)
     let resultsQueue = DispatchQueue(label: "resultsQueue", attributes: .concurrent)
 
     DispatchQueue.concurrentPerform(iterations: numAnchors) { j in
@@ -84,7 +84,7 @@ extension ViewController {
           maskProbs[i] = NSNumber(value: maskProbsPointer[i * numAnchors])
         }
 
-        let result = (boundingBox, maxClassValue, Int(maxClassIndex), maskProbs)
+        let result = (boundingBox, Int(maxClassIndex), maxClassValue, maskProbs)
 
         // Using resultsQueue to synchronize access to results
         resultsQueue.async(flags: .barrier) {
@@ -100,15 +100,15 @@ extension ViewController {
 
     // Perform NMS class by class
     for classIndex in 0..<numClasses {
-      let classResults = results.filter { $0.2 == classIndex }
+      let classResults = results.filter { $0.1 == classIndex }
       if !classResults.isEmpty {
         let boxesOnly = classResults.map { $0.0 }
-        let scoresOnly = classResults.map { $0.1 }
+        let scoresOnly = classResults.map { $0.2 }
         let selectedIndices = nonMaxSuppression(
           boxes: boxesOnly, scores: scoresOnly, threshold: iouThreshold)
         for idx in selectedIndices {
           selectedBoxesAndFeatures.append(
-            (classResults[idx].0, classResults[idx].2, classResults[idx].1, classResults[idx].3))
+            (classResults[idx].0, classResults[idx].1, classResults[idx].2, classResults[idx].3))
         }
       }
     }
@@ -116,52 +116,79 @@ extension ViewController {
     return selectedBoxesAndFeatures
   }
 
-  func updateMaskAndBoxes(
-    detectedObjects: [(CGRect, Int, Float, MLMultiArray)], maskArray: MLMultiArray
-  ) {
-    if detectedObjects.isEmpty {
-      removeAllMaskSubLayers()
-      return
-    }
-
-    let startTime = Date()
-    let group = DispatchGroup()
-
-    let sortedObjects = detectedObjects.sorted {
-      $0.0.size.width * $0.0.size.height > $1.0.size.width * $1.0.size.height
-    }
-
-    var newLayers: [CALayer] = []
-
-    for (box, classIndex, conf, masksIn) in sortedObjects {
-      group.enter()
-      DispatchQueue.global(qos: .userInitiated).async {
-        defer { group.leave() }
-        if let maskImage = self.generateColoredMaskImage(
-          from: masksIn, protos: maskArray, in: self.maskLayer.bounds.size, colorIndex: classIndex,
-          boundingBox: box)
-        {
-          DispatchQueue.main.async {
-            let adjustedBox = self.adjustBox(box, toFitIn: self.maskLayer.bounds.size)
-
-            let maskImageLayer = CALayer()
-            maskImageLayer.frame = adjustedBox
-            maskImageLayer.contents = maskImage
-            maskImageLayer.opacity = 0.5
-            newLayers.append(maskImageLayer)
-          }
-        }
+    private var isUpdating: Bool {
+      get {
+        return objc_getAssociatedObject(self, &AssociatedKeys.isUpdating) as? Bool ?? false
+      }
+      set {
+        objc_setAssociatedObject(self, &AssociatedKeys.isUpdating, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
       }
     }
 
-    group.notify(queue: .main) {
-      self.removeAllMaskSubLayers()
-      newLayers.forEach { self.maskLayer.addSublayer($0) }
-
-      print("Processing Time: \(Date().timeIntervalSince(startTime)) seconds")
+    struct AssociatedKeys {
+      static var isUpdating = "isUpdating"
     }
-  }
 
+    func updateMaskAndBoxes(
+      detectedObjects: [(CGRect, Int, Float, MLMultiArray)], maskArray: MLMultiArray
+    ) {
+      // 実行中ならスキップ
+      guard !isUpdating else {
+        print("Skipping updateMaskAndBoxes because it is already running")
+        return
+      }
+
+      // 実行中フラグをセット
+      isUpdating = true
+
+      if detectedObjects.isEmpty {
+        DispatchQueue.main.async {
+          self.removeAllMaskSubLayers()
+          self.isUpdating = false // フラグを解除
+        }
+        return
+      }
+
+      let startTime = Date()
+      let group = DispatchGroup()
+
+      let sortedObjects = detectedObjects.sorted {
+        $0.0.size.width * $0.0.size.height > $1.0.size.width * $1.0.size.height
+      }
+
+      var newLayers: [CALayer] = []
+
+      for (box, classIndex, _, masksIn) in sortedObjects {
+        group.enter()
+        DispatchQueue.global(qos: .userInitiated).async {
+          if let maskImage = self.generateColoredMaskImage(
+            from: masksIn, protos: maskArray, in: self.maskLayer.bounds.size, colorIndex: classIndex,
+            boundingBox: box)
+          {
+              let adjustedBox = self.adjustBox(box, toFitIn: self.maskLayer.bounds.size)
+
+              let maskImageLayer = CALayer()
+              maskImageLayer.frame = adjustedBox
+              maskImageLayer.contents = maskImage
+              maskImageLayer.opacity = 0.5
+              DispatchQueue.main.async {
+              newLayers.append(maskImageLayer)
+            }
+          }
+          group.leave()
+        }
+      }
+
+      // 全タスクの終了を待つ
+      group.notify(queue: .main) { [weak self] in
+        guard let self = self else { return }
+        self.removeAllMaskSubLayers()
+        newLayers.forEach { self.maskLayer.addSublayer($0) }
+        print("update complete")
+        print("Time elapsed: \(Date().timeIntervalSince(startTime))")
+        self.isUpdating = false // フラグを解除
+      }
+    }
   func generateColoredMaskImage(
     from masksIn: MLMultiArray, protos: MLMultiArray, in size: CGSize, colorIndex: Int,
     boundingBox: CGRect
@@ -186,7 +213,6 @@ extension ViewController {
       vDSP_Length(maskHeight * maskWidth), vDSP_Length(maskChannels))
 
     let threshold: Float = 0.5
-    let maskColorIndex = colorIndex % 20
     let color = colorsForMask[colorIndex]
     let red = UInt8(color.red)
     let green = UInt8(color.green)
@@ -285,5 +311,34 @@ extension UIColor {
     } else {
       return nil
     }
+  }
+}
+
+func nonMaxSuppression(boxes: [CGRect], scores: [Float], threshold: Float) -> [Int] {
+  let sortedIndices = scores.enumerated().sorted { $0.element > $1.element }.map { $0.offset }
+  var selectedIndices = [Int]()
+  var activeIndices = [Bool](repeating: true, count: boxes.count)
+
+  for i in 0..<sortedIndices.count {
+    let idx = sortedIndices[i]
+    if activeIndices[idx] {
+      selectedIndices.append(idx)
+      for j in i + 1..<sortedIndices.count {
+        let otherIdx = sortedIndices[j]
+        if activeIndices[otherIdx] {
+          let intersection = boxes[idx].intersection(boxes[otherIdx])
+          if intersection.area > CGFloat(threshold) * min(boxes[idx].area, boxes[otherIdx].area) {
+            activeIndices[otherIdx] = false
+          }
+        }
+      }
+    }
+  }
+  return selectedIndices
+}
+
+extension CGRect {
+  var area: CGFloat {
+    return width * height
   }
 }
