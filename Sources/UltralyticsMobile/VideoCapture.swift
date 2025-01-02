@@ -22,7 +22,7 @@ func bestCaptureDevice(position: AVCaptureDevice.Position) -> AVCaptureDevice {
     }
 }
 
-class VideoCapture: NSObject {
+class VideoCapture: NSObject, @unchecked Sendable {
     var previewLayer: AVCaptureVideoPreviewLayer?
     weak var delegate: VideoCaptureDelegate?
     var captureDevice: AVCaptureDevice?
