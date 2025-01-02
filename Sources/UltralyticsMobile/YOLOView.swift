@@ -74,7 +74,7 @@ public class YOLOView: UIView{
         videoCapture.start()
     }
     
-    private func predictOnFrame(sampleBuffer: CMSampleBuffer) {
+    private nonisolated func predictOnFrame(sampleBuffer: CMSampleBuffer) {
         if currentBuffer == nil, let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
             currentBuffer = pixelBuffer
             
