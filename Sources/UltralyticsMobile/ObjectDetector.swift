@@ -10,7 +10,7 @@ class ObjectDetector: Predictor {
     private var currentOnInferenceTimeListener: InferenceTimeListener?
     private var currentOnFpsRateListener: FpsRateListener?
     private var inputSize: CGSize!
-    public var labels = [String]()
+    var labels = [String]()
     var t0 = 0.0  // inference start
     var t1 = 0.0  // inference dt
     var t2 = 0.0  // inference dt smoothed
