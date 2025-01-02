@@ -2,6 +2,7 @@ import AVFoundation
 import CoreVideo
 import UIKit
 
+@MainActor
 protocol VideoCaptureDelegate: AnyObject {
     func videoCapture(_ capture: VideoCapture, didCaptureVideoFrame: CMSampleBuffer)
 }
@@ -131,7 +132,9 @@ class VideoCapture: NSObject {
 
 extension VideoCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        delegate?.videoCapture(self, didCaptureVideoFrame: sampleBuffer)
+        DispatchQueue.main.async {
+            self.delegate?.videoCapture(self, didCaptureVideoFrame: sampleBuffer)
+        }
     }
 }
 
