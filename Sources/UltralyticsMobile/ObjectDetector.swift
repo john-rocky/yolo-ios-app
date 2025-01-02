@@ -2,7 +2,7 @@ import Foundation
 import Vision
 import UIKit
 
-class ObjectDetector: Predictor {
+class ObjectDetector: Predictor,@unchecked Sendable {
     private var detector: VNCoreMLModel!
     private var visionRequest: VNCoreMLRequest?
     private var currentBuffer: CVPixelBuffer?
