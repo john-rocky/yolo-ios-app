@@ -74,7 +74,7 @@ public class YOLOView: UIView{
         videoCapture.start()
     }
     
-    private nonisolated func predictOnFrame(sampleBuffer: CMSampleBuffer) {
+    private func predictOnFrame(sampleBuffer: CMSampleBuffer) {
         if currentBuffer == nil, let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
             currentBuffer = pixelBuffer
             
@@ -241,7 +241,9 @@ public class YOLOView: UIView{
 extension YOLOView: VideoCaptureDelegate, ResultsListener, InferenceTimeListener, FpsRateListener {
     
     nonisolated func videoCapture(_ capture: VideoCapture, didCaptureVideoFrame: CMSampleBuffer) {
-        predictOnFrame(sampleBuffer: didCaptureVideoFrame)
+        DispatchQueue.main.async {
+            self.predictOnFrame(sampleBuffer: didCaptureVideoFrame)
+        }
     }
     
     func on(predictions: [[String : Any]]) {
