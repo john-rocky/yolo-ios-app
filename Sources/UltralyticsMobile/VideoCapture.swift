@@ -2,7 +2,8 @@ import AVFoundation
 import CoreVideo
 import UIKit
 
-public protocol VideoCaptureDelegate: AnyObject {
+@MainActor
+protocol VideoCaptureDelegate: AnyObject {
     func videoCapture(_ capture: VideoCapture, didCaptureVideoFrame: CMSampleBuffer)
 }
 

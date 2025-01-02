@@ -1,14 +1,17 @@
 import Vision
 import CoreImage
 
+@MainActor
 public protocol ResultsListener {
     func on(predictions: [[String:Any]])
 }
 
+@MainActor
 public protocol InferenceTimeListener {
     func on(inferenceTime: Double)
 }
 
+@MainActor
 public protocol FpsRateListener {
     func on(fpsRate: Double)
 }

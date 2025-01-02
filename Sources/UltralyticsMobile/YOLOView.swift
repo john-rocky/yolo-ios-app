@@ -239,11 +239,11 @@ public class YOLOView: UIView{
 
 extension YOLOView: VideoCaptureDelegate, ResultsListener, InferenceTimeListener, FpsRateListener {
     
-    nonisolated func videoCapture(_ capture: VideoCapture, didCaptureVideoFrame: CMSampleBuffer) {
+    func videoCapture(_ capture: VideoCapture, didCaptureVideoFrame: CMSampleBuffer) {
         predictOnFrame(sampleBuffer: didCaptureVideoFrame)
     }
     
-    public nonisolated func on(predictions: [[String : Any]]) {
+    public func on(predictions: [[String : Any]]) {
         showBoxes(predictions: predictions)
         var boxes: [Box] = []
         for prediction in predictions {
@@ -260,11 +260,11 @@ extension YOLOView: VideoCaptureDelegate, ResultsListener, InferenceTimeListener
         onDetection?(result)
     }
     
-    public nonisolated func on(inferenceTime: Double) {
+    public func on(inferenceTime: Double) {
         
     }
     
-    public nonisolated func on(fpsRate: Double) {
+    public func on(fpsRate: Double) {
         
     }
     
