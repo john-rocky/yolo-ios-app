@@ -33,7 +33,7 @@ class VideoCapture: NSObject {
     let cameraQueue = DispatchQueue(label: "camera-queue")
     var lastCapturedPhoto: UIImage? = nil
 
-    public func setUp(sessionPreset: AVCaptureSession.Preset = .hd1280x720,
+    func setUp(sessionPreset: AVCaptureSession.Preset = .hd1280x720,
                       position: AVCaptureDevice.Position,
                       completion: @escaping (Bool) -> Void) {
         cameraQueue.async {
@@ -131,7 +131,7 @@ class VideoCapture: NSObject {
 }
 
 extension VideoCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
-    public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         delegate?.videoCapture(self, didCaptureVideoFrame: sampleBuffer)
     }
 }
