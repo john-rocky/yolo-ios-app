@@ -3,10 +3,13 @@ import Vision
 import AVFoundation
 
 public class YOLOView: UIView, VideoCaptureDelegate{
-    func onPredict(_ capture: VideoCapture, result: [[String:Any]]) {
-        showBoxes(predictions: result)
+
+    
+    func onPredict(result: PredictionsWrapper) {
+        let predictions = result.predictions
+        showBoxes(predictions: predictions)
         var boxes: [Box] = []
-        for prediction in result {
+        for prediction in predictions {
           let rect = prediction["box"] as! CGRect
           let bestClass = prediction["label"] as! String
           let confidence = CGFloat(prediction["confidence"] as! VNConfidence)

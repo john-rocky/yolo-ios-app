@@ -120,22 +120,7 @@ class ObjectDetector: Predictor {
             /// - Tag: MappingOrientation
             // The frame is always oriented based on the camera sensor,
             // so in most cases Vision needs to rotate it for the model to work as expected.
-            let imageOrientation: CGImagePropertyOrientation
-            switch UIDevice.current.orientation {
-            case .portrait:
-                imageOrientation = .up
-            case .portraitUpsideDown:
-                imageOrientation = .down
-            case .landscapeLeft:
-                imageOrientation = .left
-            case .landscapeRight:
-                imageOrientation = .right
-            case .unknown:
-                print("The device orientation is unknown, the predictions may be affected")
-                fallthrough
-            default:
-                imageOrientation = .up
-            }
+            let imageOrientation: CGImagePropertyOrientation = .up
             
             // Invoke a VNRequestHandler with that image
             let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: imageOrientation, options: [:])
@@ -172,7 +157,6 @@ class ObjectDetector: Predictor {
     }
     
     func processObservations(for request: VNRequest, error: Error?) {
-        DispatchQueue.main.async {
             if let results = request.results as? [VNRecognizedObjectObservation] {
                 var recognitions: [[String:Any]] = []
                 
@@ -207,7 +191,6 @@ class ObjectDetector: Predictor {
                 self.currentOnInferenceTimeListener?.on(inferenceTime: self.t2 * 1000)  // t2 seconds to ms
                 self.currentOnFpsRateListener?.on(fpsRate: 1 / self.t4)
             }
-        }
     }
     
     func predictOnImage(image: CIImage) -> YOLOResult {

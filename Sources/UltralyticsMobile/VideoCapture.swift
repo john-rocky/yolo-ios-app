@@ -5,7 +5,7 @@ import Vision
 
 @MainActor
 protocol VideoCaptureDelegate: AnyObject {
-    func onPredict(_ capture: VideoCapture, result: [[String: Any]])
+    func onPredict(result: PredictionsWrapper)
 }
 
 func bestCaptureDevice(position: AVCaptureDevice.Position) -> AVCaptureDevice {
@@ -23,7 +23,7 @@ func bestCaptureDevice(position: AVCaptureDevice.Position) -> AVCaptureDevice {
     }
 }
 
-class VideoCapture: NSObject {
+class VideoCapture: NSObject,@unchecked Sendable {
     var predictor:Predictor!
     var previewLayer: AVCaptureVideoPreviewLayer?
     weak var delegate: VideoCaptureDelegate?
@@ -183,9 +183,10 @@ extension VideoCapture: AVCapturePhotoCaptureDelegate {
 extension VideoCapture: ResultsListener, InferenceTimeListener, FpsRateListener {
     
     func on(predictions: [[String : Any]]) {
-        let pred = predictions
+        let pred = PredictionsWrapper(predictions: predictions)
+
         DispatchQueue.main.async {
-            self.delegate?.onPredict(self, result: pred)
+            self.delegate?.onPredict(result: pred)
         }
     }
     
@@ -198,3 +199,5 @@ extension VideoCapture: ResultsListener, InferenceTimeListener, FpsRateListener 
     }
     
 }
+
+
