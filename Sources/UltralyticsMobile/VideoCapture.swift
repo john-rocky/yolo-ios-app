@@ -183,7 +183,9 @@ extension VideoCapture: AVCapturePhotoCaptureDelegate {
 extension VideoCapture: ResultsListener, InferenceTimeListener, FpsRateListener {
     
     func on(predictions: [[String : Any]]) {
-        delegate?.onPredict(self, result: predictions)
+        DispatchQueue.main.async {
+            self.delegate?.onPredict(self, result: predictions)
+        }
     }
     
     func on(inferenceTime: Double) {
