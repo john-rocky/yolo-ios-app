@@ -13,13 +13,13 @@ public struct YOLOCamera: View {
         task: YOLOTask = .detect,
         cameraPosition: AVCaptureDevice.Position = .back
     ) {
-        self.modelPathOrName = modelPath
+        self.modelPathOrName = modelPathOrName
         self.task = task
         self.cameraPosition = cameraPosition
     }
 
     
-    var body: some View {
+    public var body: some View {
         ZStack {
             YOLOViewRepresentable(
                 modelPathOrName: modelPathOrName,
