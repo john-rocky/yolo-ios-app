@@ -152,43 +152,46 @@ class ObjectDetector: Predictor {
     }
     
     private func processObservations(for request: VNRequest, error: Error?) {
-        if let results = request.results as? [VNRecognizedObjectObservation] {
-            var recognitions: [[String:Any]] = []
+        DispatchQueue.global(qos: .userInitiated).async {
             
-            for i in 0..<100 {
-                if i < results.count && i < self.numItemsThreshold {
-                    let prediction = results[i]
-                    
-                    var rect = prediction.boundingBox  // normalized xywh, origin lower left
-                    
-                    // The labels array is a list of VNClassificationObservation objects,
-                    // with the highest scoring class first in the list.
-                    let label = prediction.labels[0].identifier
-                    let index = self.labels.firstIndex(of: label) ?? 0
-                    let confidence = prediction.labels[0].confidence
-                    recognitions.append(["label": label,
-                                         "confidence": confidence,
-                                         "index": index,
-                                         "box": rect
-                                        ])
-                }
-            }
-            
-            DispatchQueue.main.async {
-                self.currentOnResultsListener?.on(predictions: recognitions)
+            if let results = request.results as? [VNRecognizedObjectObservation] {
+                var recognitions: [[String:Any]] = []
                 
-                // Measure FPS
-                if self.t1 < 10.0 {  // valid dt
-                    self.t2 = self.t1 * 0.05 + self.t2 * 0.95  // smoothed inference time
+                for i in 0..<100 {
+                    if i < results.count && i < self.numItemsThreshold {
+                        let prediction = results[i]
+                        
+                        var rect = prediction.boundingBox  // normalized xywh, origin lower left
+                        
+                        // The labels array is a list of VNClassificationObservation objects,
+                        // with the highest scoring class first in the list.
+                        let label = prediction.labels[0].identifier
+                        let index = self.labels.firstIndex(of: label) ?? 0
+                        let confidence = prediction.labels[0].confidence
+                        recognitions.append(["label": label,
+                                             "confidence": confidence,
+                                             "index": index,
+                                             "box": rect
+                                            ])
+                    }
                 }
-                self.t4 = (CACurrentMediaTime() - self.t3) * 0.05 + self.t4 * 0.95  // smoothed delivered FPS
-                self.t3 = CACurrentMediaTime()
                 
-                self.currentOnInferenceTimeListener?.on(inferenceTime: self.t2 * 1000)  // t2 seconds to ms
-                self.currentOnFpsRateListener?.on(fpsRate: 1 / self.t4)
+                DispatchQueue.main.async {
+                    self.currentOnResultsListener?.on(predictions: recognitions)
+                    
+                    // Measure FPS
+                    if self.t1 < 10.0 {  // valid dt
+                        self.t2 = self.t1 * 0.05 + self.t2 * 0.95  // smoothed inference time
+                    }
+                    self.t4 = (CACurrentMediaTime() - self.t3) * 0.05 + self.t4 * 0.95  // smoothed delivered FPS
+                    self.t3 = CACurrentMediaTime()
+                    
+                    self.currentOnInferenceTimeListener?.on(inferenceTime: self.t2 * 1000)  // t2 seconds to ms
+                    self.currentOnFpsRateListener?.on(fpsRate: 1 / self.t4)
+                }
             }
         }
-        
+    }
     }
     
     func predictOnImage(image: CIImage) -> YOLOResult {
