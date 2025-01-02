@@ -3,6 +3,7 @@ import CoreVideo
 import UIKit
 import Vision
 
+@MainActor
 protocol VideoCaptureDelegate: AnyObject {
     func onPredict(_ capture: VideoCapture, result: [[String: Any]])
 }
