@@ -8,10 +8,10 @@
 
 - **Comprehensive Model Support**: Leverage YOLO11 and other YOLO-based models for:
   - Object Detection
-  - Image Segmentation
-  - Classification
-  - Pose Estimation
-  - Oriented Bounding Box Detection
+  - Image Segmentation (Todo)
+  - Classification (Todo)
+  - Pose Estimation (Todo)
+  - Oriented Bounding Box Detection (Todo)
 - **Simple API**: Perform complex tasks with just a few lines of code.
 - **Real-Time Capabilities**: Effortlessly set up a real-time camera-based inference view.
 - **Multi-Platform Support**  
