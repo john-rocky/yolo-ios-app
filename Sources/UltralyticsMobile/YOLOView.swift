@@ -260,11 +260,11 @@ extension YOLOView: VideoCaptureDelegate, ResultsListener, InferenceTimeListener
         onDetection?(result)
     }
     
-    public func on(inferenceTime: Double) {
+    func on(inferenceTime: Double) {
         
     }
     
-    public func on(fpsRate: Double) {
+    func on(fpsRate: Double) {
         
     }
     
