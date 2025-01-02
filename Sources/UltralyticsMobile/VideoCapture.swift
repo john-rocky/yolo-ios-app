@@ -1,9 +1,10 @@
 import AVFoundation
 import CoreVideo
 import UIKit
+import Vision
 
 protocol VideoCaptureDelegate: AnyObject {
-    func videoCapture(_ capture: VideoCapture, didCaptureVideoFrame: CMSampleBuffer)
+    func onPredict(_ capture: VideoCapture, result: [[String: Any]])
 }
 
 func bestCaptureDevice(position: AVCaptureDevice.Position) -> AVCaptureDevice {
@@ -21,7 +22,8 @@ func bestCaptureDevice(position: AVCaptureDevice.Position) -> AVCaptureDevice {
     }
 }
 
-class VideoCapture: NSObject, @unchecked Sendable {
+class VideoCapture: NSObject {
+    var predictor:Predictor!
     var previewLayer: AVCaptureVideoPreviewLayer?
     weak var delegate: VideoCaptureDelegate?
     var captureDevice: AVCaptureDevice?
@@ -31,6 +33,7 @@ class VideoCapture: NSObject, @unchecked Sendable {
     var photoOutput = AVCapturePhotoOutput()
     let cameraQueue = DispatchQueue(label: "camera-queue")
     var lastCapturedPhoto: UIImage? = nil
+    private var currentBuffer: CVPixelBuffer?
 
     func setUp(sessionPreset: AVCaptureSession.Preset = .hd1280x720,
                       position: AVCaptureDevice.Position,
@@ -127,13 +130,40 @@ class VideoCapture: NSObject, @unchecked Sendable {
             captureDevice!.videoZoomFactor = ratio
         } catch { }
     }
+    
+    private func predictOnFrame(sampleBuffer: CMSampleBuffer) {
+        if currentBuffer == nil, let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
+            currentBuffer = pixelBuffer
+            
+            /// - Tag: MappingOrientation
+            // The frame is always oriented based on the camera sensor,
+            // so in most cases Vision needs to rotate it for the model to work as expected.
+            var imageOrientation: CGImagePropertyOrientation = .up
+//            switch UIDevice.current.orientation {
+//            case .portrait:
+//                imageOrientation = .up
+//            case .portraitUpsideDown:
+//                imageOrientation = .down
+//            case .landscapeLeft:
+//                imageOrientation = .up
+//            case .landscapeRight:
+//                imageOrientation = .up
+//            case .unknown:
+//                imageOrientation = .up
+//                
+//            default:
+//                imageOrientation = .up
+//            }
+            
+            predictor.predict(sampleBuffer: sampleBuffer, onResultsListener: self, onInferenceTime: self, onFpsRate: self)
+            currentBuffer = nil
+        }
+    }
 }
 
 extension VideoCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-//        DispatchQueue.main.async {
-            self.delegate?.videoCapture(self, didCaptureVideoFrame: sampleBuffer)
-//        }
+        predictOnFrame(sampleBuffer: sampleBuffer)
     }
 }
 
@@ -147,4 +177,20 @@ extension VideoCapture: AVCapturePhotoCaptureDelegate {
 
         self.lastCapturedPhoto = image
     }
+}
+
+extension VideoCapture: ResultsListener, InferenceTimeListener, FpsRateListener {
+    
+    func on(predictions: [[String : Any]]) {
+        delegate?.onPredict(self, result: predictions)
+    }
+    
+    func on(inferenceTime: Double) {
+        
+    }
+    
+    func on(fpsRate: Double) {
+        
+    }
+    
 }

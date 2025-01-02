@@ -2,7 +2,7 @@ import Foundation
 import Vision
 import UIKit
 
-class ObjectDetector: Predictor,  @unchecked Sendable {
+class ObjectDetector: Predictor {
     private var detector: VNCoreMLModel!
     private var visionRequest: VNCoreMLRequest?
     private var currentBuffer: CVPixelBuffer?
@@ -10,7 +10,7 @@ class ObjectDetector: Predictor,  @unchecked Sendable {
     private var currentOnInferenceTimeListener: InferenceTimeListener?
     private var currentOnFpsRateListener: FpsRateListener?
     private var inputSize: CGSize!
-    var labels = [String]()
+    public var labels = [String]()
     var t0 = 0.0  // inference start
     var t1 = 0.0  // inference dt
     var t2 = 0.0  // inference dt smoothed
@@ -55,7 +55,7 @@ class ObjectDetector: Predictor,  @unchecked Sendable {
         } catch {
             fatalError(PredictorError.modelFileNotFound.localizedDescription)
         }
-        
+
         guard let userDefined = mlModel.modelDescription.metadata[MLModelMetadataKey.creatorDefinedKey] as? [String: String]
         else { return }
         
@@ -71,8 +71,8 @@ class ObjectDetector: Predictor,  @unchecked Sendable {
             
             // Split the cleaned string into an array of key-value pairs
             let keyValuePairs = cleanedInput.components(separatedBy: ",")
-            
-            
+
+
             for pair in keyValuePairs {
                 // Split each key-value pair into key and value
                 let components = pair.components(separatedBy: ":")
@@ -82,23 +82,23 @@ class ObjectDetector: Predictor,  @unchecked Sendable {
                 if components.count >= 2 {
                     // Get the second component and trim any leading/trailing whitespace
                     let extractedString = components[1].trimmingCharacters(in: .whitespaces)
-                    
+
                     // Remove single quotes if they exist
                     let cleanedString = extractedString.replacingOccurrences(of: "'", with: "")
-                    
+
                     labels.append(cleanedString)
                 } else {
                     print("Invalid input string")
                 }
             }
-            
+
         } else {
             fatalError("Invalid metadata format")
         }
         
         detector = try! VNCoreMLModel(for: mlModel)
         detector.featureProvider = ThresholdProvider()
-        
+
         visionRequest = {
             let request = VNCoreMLRequest(model: detector, completionHandler: {
                 [weak self] request, error in
@@ -109,7 +109,7 @@ class ObjectDetector: Predictor,  @unchecked Sendable {
         }()
     }
     
-    func predict(sampleBuffer: CMSampleBuffer, orientation:CGImagePropertyOrientation, onResultsListener: ResultsListener?, onInferenceTime: InferenceTimeListener?, onFpsRate: FpsRateListener?) {
+    func predict(sampleBuffer: CMSampleBuffer, onResultsListener: ResultsListener?, onInferenceTime: InferenceTimeListener?, onFpsRate: FpsRateListener?) {
         if currentBuffer == nil, let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
             currentBuffer = pixelBuffer
             inputSize = CGSize(width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer))
@@ -117,8 +117,28 @@ class ObjectDetector: Predictor,  @unchecked Sendable {
             currentOnInferenceTimeListener = onInferenceTime
             currentOnFpsRateListener = onFpsRate
             
+            /// - Tag: MappingOrientation
+            // The frame is always oriented based on the camera sensor,
+            // so in most cases Vision needs to rotate it for the model to work as expected.
+            let imageOrientation: CGImagePropertyOrientation
+            switch UIDevice.current.orientation {
+            case .portrait:
+                imageOrientation = .up
+            case .portraitUpsideDown:
+                imageOrientation = .down
+            case .landscapeLeft:
+                imageOrientation = .left
+            case .landscapeRight:
+                imageOrientation = .right
+            case .unknown:
+                print("The device orientation is unknown, the predictions may be affected")
+                fallthrough
+            default:
+                imageOrientation = .up
+            }
+            
             // Invoke a VNRequestHandler with that image
-            let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: orientation, options: [:])
+            let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: imageOrientation, options: [:])
             t0 = CACurrentMediaTime()  // inference start
             do {
                 if(visionRequest != nil){
@@ -128,7 +148,7 @@ class ObjectDetector: Predictor,  @unchecked Sendable {
                 print(error)
             }
             t1 = CACurrentMediaTime() - t0  // inference dt
-            
+
             
             currentBuffer = nil
         }
@@ -151,9 +171,8 @@ class ObjectDetector: Predictor,  @unchecked Sendable {
         numItemsThreshold = numItems
     }
     
-    private func processObservations(for request: VNRequest, error: Error?) {
-        DispatchQueue.global(qos: .userInitiated).async {
-            
+    func processObservations(for request: VNRequest, error: Error?) {
+        DispatchQueue.main.async {
             if let results = request.results as? [VNRecognizedObjectObservation] {
                 var recognitions: [[String:Any]] = []
                 
@@ -172,27 +191,24 @@ class ObjectDetector: Predictor,  @unchecked Sendable {
                                              "confidence": confidence,
                                              "index": index,
                                              "box": rect
-                                            ])
+                                             ])
                     }
                 }
                 
-                DispatchQueue.main.async {
-                    self.currentOnResultsListener?.on(predictions: recognitions)
-                    
-                    // Measure FPS
-                    if self.t1 < 10.0 {  // valid dt
-                        self.t2 = self.t1 * 0.05 + self.t2 * 0.95  // smoothed inference time
-                    }
-                    self.t4 = (CACurrentMediaTime() - self.t3) * 0.05 + self.t4 * 0.95  // smoothed delivered FPS
-                    self.t3 = CACurrentMediaTime()
-                    
-                    self.currentOnInferenceTimeListener?.on(inferenceTime: self.t2 * 1000)  // t2 seconds to ms
-                    self.currentOnFpsRateListener?.on(fpsRate: 1 / self.t4)
+                self.currentOnResultsListener?.on(predictions: recognitions)
+                
+                // Measure FPS
+                if self.t1 < 10.0 {  // valid dt
+                    self.t2 = self.t1 * 0.05 + self.t2 * 0.95  // smoothed inference time
                 }
+                self.t4 = (CACurrentMediaTime() - self.t3) * 0.05 + self.t4 * 0.95  // smoothed delivered FPS
+                self.t3 = CACurrentMediaTime()
+
+                self.currentOnInferenceTimeListener?.on(inferenceTime: self.t2 * 1000)  // t2 seconds to ms
+                self.currentOnFpsRateListener?.on(fpsRate: 1 / self.t4)
             }
         }
     }
-    
     
     func predictOnImage(image: CIImage) -> YOLOResult {
         let requestHandler = VNImageRequestHandler(ciImage: image, options: [:])
