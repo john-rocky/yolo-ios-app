@@ -98,9 +98,10 @@ public class YOLOView: UIView{
                 imageOrientation = .up
             }
 
-            
-            predictor.predict(sampleBuffer: sampleBuffer, orientation: imageOrientation,onResultsListener: self, onInferenceTime: self, onFpsRate: self)
-            currentBuffer = nil
+            DispatchQueue.global(qos: .userInitiated).async {
+                self.predictor.predict(sampleBuffer: sampleBuffer, orientation: imageOrientation,onResultsListener: self, onInferenceTime: self, onFpsRate: self)
+                self.currentBuffer = nil
+            }
         }
     }
     
