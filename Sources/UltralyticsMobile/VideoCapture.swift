@@ -22,9 +22,9 @@ func bestCaptureDevice(position: AVCaptureDevice.Position) -> AVCaptureDevice {
     }
 }
 
-public class VideoCapture: NSObject {
-    public var previewLayer: AVCaptureVideoPreviewLayer?
-    public weak var delegate: VideoCaptureDelegate?
+class VideoCapture: NSObject {
+    var previewLayer: AVCaptureVideoPreviewLayer?
+    weak var delegate: VideoCaptureDelegate?
     var captureDevice: AVCaptureDevice?
     let captureSession = AVCaptureSession()
     var videoInput: AVCaptureDeviceInput? = nil
@@ -103,7 +103,7 @@ public class VideoCapture: NSObject {
         return true
     }
 
-    public func start() {
+    func start() {
         if !captureSession.isRunning {
             DispatchQueue.global().async {
                 self.captureSession.startRunning()
@@ -111,7 +111,7 @@ public class VideoCapture: NSObject {
         }
     }
 
-    public func stop() {
+    func stop() {
         if captureSession.isRunning {
             DispatchQueue.global().async {
                 self.captureSession.stopRunning()
@@ -119,7 +119,7 @@ public class VideoCapture: NSObject {
         }
     }
     
-    public func setZoomRatio(ratio: CGFloat){
+    func setZoomRatio(ratio: CGFloat){
         do {
             try captureDevice!.lockForConfiguration()
             defer {
@@ -138,7 +138,7 @@ extension VideoCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
 
 extension VideoCapture: AVCapturePhotoCaptureDelegate {
     @available(iOS 11.0, *)
-    public func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         guard let data = photo.fileDataRepresentation(),
               let image =  UIImage(data: data) else {
                 return
