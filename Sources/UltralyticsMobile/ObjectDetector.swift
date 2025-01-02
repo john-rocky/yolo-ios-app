@@ -55,7 +55,7 @@ class ObjectDetector: Predictor {
         } catch {
             fatalError(PredictorError.modelFileNotFound.localizedDescription)
         }
-
+        
         guard let userDefined = mlModel.modelDescription.metadata[MLModelMetadataKey.creatorDefinedKey] as? [String: String]
         else { return }
         
@@ -71,8 +71,8 @@ class ObjectDetector: Predictor {
             
             // Split the cleaned string into an array of key-value pairs
             let keyValuePairs = cleanedInput.components(separatedBy: ",")
-
-
+            
+            
             for pair in keyValuePairs {
                 // Split each key-value pair into key and value
                 let components = pair.components(separatedBy: ":")
@@ -82,23 +82,23 @@ class ObjectDetector: Predictor {
                 if components.count >= 2 {
                     // Get the second component and trim any leading/trailing whitespace
                     let extractedString = components[1].trimmingCharacters(in: .whitespaces)
-
+                    
                     // Remove single quotes if they exist
                     let cleanedString = extractedString.replacingOccurrences(of: "'", with: "")
-
+                    
                     labels.append(cleanedString)
                 } else {
                     print("Invalid input string")
                 }
             }
-
+            
         } else {
             fatalError("Invalid metadata format")
         }
         
         detector = try! VNCoreMLModel(for: mlModel)
         detector.featureProvider = ThresholdProvider()
-
+        
         visionRequest = {
             let request = VNCoreMLRequest(model: detector, completionHandler: {
                 [weak self] request, error in
@@ -128,7 +128,7 @@ class ObjectDetector: Predictor {
                 print(error)
             }
             t1 = CACurrentMediaTime() - t0  // inference dt
-
+            
             
             currentBuffer = nil
         }
@@ -152,42 +152,41 @@ class ObjectDetector: Predictor {
     }
     
     private func processObservations(for request: VNRequest, error: Error?) {
-        DispatchQueue.main.async {
-            if let results = request.results as? [VNRecognizedObjectObservation] {
-                var recognitions: [[String:Any]] = []
-                
-                for i in 0..<100 {
-                    if i < results.count && i < self.numItemsThreshold {
-                        let prediction = results[i]
-                        
-                        var rect = prediction.boundingBox  // normalized xywh, origin lower left
-                        
-                        // The labels array is a list of VNClassificationObservation objects,
-                        // with the highest scoring class first in the list.
-                        let label = prediction.labels[0].identifier
-                        let index = self.labels.firstIndex(of: label) ?? 0
-                        let confidence = prediction.labels[0].confidence
-                        recognitions.append(["label": label,
-                                             "confidence": confidence,
-                                             "index": index,
-                                             "box": rect
-                                             ])
-                    }
+        if let results = request.results as? [VNRecognizedObjectObservation] {
+            var recognitions: [[String:Any]] = []
+            
+            for i in 0..<100 {
+                if i < results.count && i < self.numItemsThreshold {
+                    let prediction = results[i]
+                    
+                    var rect = prediction.boundingBox  // normalized xywh, origin lower left
+                    
+                    // The labels array is a list of VNClassificationObservation objects,
+                    // with the highest scoring class first in the list.
+                    let label = prediction.labels[0].identifier
+                    let index = self.labels.firstIndex(of: label) ?? 0
+                    let confidence = prediction.labels[0].confidence
+                    recognitions.append(["label": label,
+                                         "confidence": confidence,
+                                         "index": index,
+                                         "box": rect
+                                        ])
                 }
-                
-                self.currentOnResultsListener?.on(predictions: recognitions)
-                
-                // Measure FPS
-                if self.t1 < 10.0 {  // valid dt
-                    self.t2 = self.t1 * 0.05 + self.t2 * 0.95  // smoothed inference time
-                }
-                self.t4 = (CACurrentMediaTime() - self.t3) * 0.05 + self.t4 * 0.95  // smoothed delivered FPS
-                self.t3 = CACurrentMediaTime()
-
-                self.currentOnInferenceTimeListener?.on(inferenceTime: self.t2 * 1000)  // t2 seconds to ms
-                self.currentOnFpsRateListener?.on(fpsRate: 1 / self.t4)
             }
+            
+            self.currentOnResultsListener?.on(predictions: recognitions)
+            
+            // Measure FPS
+            if self.t1 < 10.0 {  // valid dt
+                self.t2 = self.t1 * 0.05 + self.t2 * 0.95  // smoothed inference time
+            }
+            self.t4 = (CACurrentMediaTime() - self.t3) * 0.05 + self.t4 * 0.95  // smoothed delivered FPS
+            self.t3 = CACurrentMediaTime()
+            
+            self.currentOnInferenceTimeListener?.on(inferenceTime: self.t2 * 1000)  // t2 seconds to ms
+            self.currentOnFpsRateListener?.on(fpsRate: 1 / self.t4)
         }
+        
     }
     
     func predictOnImage(image: CIImage) -> YOLOResult {
