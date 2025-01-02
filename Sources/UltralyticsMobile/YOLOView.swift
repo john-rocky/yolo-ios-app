@@ -2,11 +2,8 @@ import UIKit
 import Vision
 import AVFoundation
 
-public class YOLOView: UIView, VideoCaptureDelegate{
-    nonisolated func videoCapture(_ capture: VideoCapture, didCaptureVideoFrame: CMSampleBuffer) {
-        predictOnFrame(sampleBuffer: didCaptureVideoFrame)
-    }
-    
+public class YOLOView: UIView{
+
     public var onDetection: ((YOLOResult) -> Void)?
     private let videoCapture: VideoCapture
     private var busy = false
@@ -240,7 +237,11 @@ public class YOLOView: UIView, VideoCaptureDelegate{
     }
 }
 
-extension YOLOView: ResultsListener, InferenceTimeListener, FpsRateListener {
+extension YOLOView: VideoCaptureDelegate, ResultsListener, InferenceTimeListener, FpsRateListener {
+    
+    nonisolated func videoCapture(_ capture: VideoCapture, didCaptureVideoFrame: CMSampleBuffer) {
+        predictOnFrame(sampleBuffer: didCaptureVideoFrame)
+    }
     
     public nonisolated func on(predictions: [[String : Any]]) {
         showBoxes(predictions: predictions)
