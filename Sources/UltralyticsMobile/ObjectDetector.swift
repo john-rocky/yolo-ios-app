@@ -192,7 +192,7 @@ class ObjectDetector: Predictor {
             }
         }
     }
-    }
+    
     
     func predictOnImage(image: CIImage) -> YOLOResult {
         let requestHandler = VNImageRequestHandler(ciImage: image, options: [:])
