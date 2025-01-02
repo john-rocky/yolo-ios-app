@@ -13,6 +13,7 @@ import Foundation
 import UIKit
 
 /// Manages the visualization of bounding boxes and associated labels for object detection results.
+@MainActor
 class BoundingBoxView {
   /// The layer that draws the bounding box around a detected object.
   let shapeLayer: CAShapeLayer
