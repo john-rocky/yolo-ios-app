@@ -74,7 +74,6 @@ flutter pub get
 ```swift
 import ultralytics_mobile
 
-// Object detection example
 let model = YOLO("yolo11n", task: .detect)
 let result = model(someUIImage)
 ```
@@ -84,7 +83,6 @@ let result = model(someUIImage)
 import ultralytics_mobile.YOLO
 import ultralytics_mobile.Task
 
-// Object detection example
 val model = YOLO("yolo11n", task = Task.DETECT)
 val result = model(someBitmap)
 ```
@@ -93,7 +91,6 @@ val result = model(someBitmap)
 ```dart
 import 'package:ultralytics_mobile/ultralytics_mobile.dart';
 
-// Object detection example
 final model = YOLO("yolo11n", task: Task.detect);
 final result = model(someImage);
 ```
@@ -106,7 +103,6 @@ final result = model(someImage);
 ```swift
 import ultralytics_mobile
 
-// Real-time object detection
 let yoloView = YOLOView("yolo11n", task: .detect)
 view.addSubview(yoloView)
 ```
