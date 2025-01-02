@@ -1,129 +1,283 @@
-<a href="https://ultralytics.com" target="_blank"><img src="https://raw.githubusercontent.com/ultralytics/assets/main/logo/Ultralytics_Logotype_Original.svg" width="320" alt="Ultralytics logo"></a>
+# 🔥 ultralytics-mobile
 
-# 🚀 Ultralytics YOLO iOS App
+**ultralytics-mobile** is a lightweight, multi-platform library — supporting **Swift**, **Kotlin**, **Java**, and **Dart** — designed to make using **YOLO11** and other YOLO-based models on mobile devices seamless and intuitive. This library supports **object detection**, **segmentation**, **classification**, **pose estimation**, **oriented bounding box detection**, and more — all in real-time or on single images. Compatible with **iOS**, **Android**, and **Flutter**.
 
-[![Ultralytics Actions](https://github.com/ultralytics/yolo-ios-app/actions/workflows/format.yml/badge.svg)](https://github.com/ultralytics/yolo-ios-app/actions/workflows/format.yml) <a href="https://ultralytics.com/discord"><img alt="Discord" src="https://img.shields.io/discord/1089800235347353640?logo=discord&logoColor=white&label=Discord&color=blue"></a> <a href="https://community.ultralytics.com"><img alt="Ultralytics Forums" src="https://img.shields.io/discourse/users?server=https%3A%2F%2Fcommunity.ultralytics.com&logo=discourse&label=Forums&color=blue"></a>
+---
 
-Welcome to the [Ultralytics YOLO iOS App](https://apps.apple.com/us/app/idetection/id1452689527) GitHub repository! 📖 Leveraging Ultralytics' advanced [YOLOv8 object detection models](https://github.com/ultralytics/ultralytics), this app transforms your iOS device into an intelligent detection tool. Explore our guide to get started with the Ultralytics YOLO iOS App and discover the world in a new and exciting way.
+## 🚀 Features
 
-<div align="center">
-  <a href="https://apps.apple.com/us/app/idetection/id1452689527" target="_blank"><img width="90%" src="https://github.com/ultralytics/ultralytics/assets/26833433/fd3c8a92-fec0-4253-b4ac-ee94f5ced3fb" alt="Ultralytics YOLO iOS App previews"></a>
-  <br>
-  <a href="https://github.com/ultralytics"><img src="https://github.com/ultralytics/assets/raw/main/social/logo-social-github.png" width="3%" alt="Ultralytics GitHub"></a>
-  <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="3%" alt="space">
-  <a href="https://www.linkedin.com/company/ultralytics/"><img src="https://github.com/ultralytics/assets/raw/main/social/logo-social-linkedin.png" width="3%" alt="Ultralytics LinkedIn"></a>
-  <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="3%" alt="space">
-  <a href="https://twitter.com/ultralytics"><img src="https://github.com/ultralytics/assets/raw/main/social/logo-social-twitter.png" width="3%" alt="Ultralytics Twitter"></a>
-  <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="3%" alt="space">
-  <a href="https://youtube.com/ultralytics?sub_confirmation=1"><img src="https://github.com/ultralytics/assets/raw/main/social/logo-social-youtube.png" width="3%" alt="Ultralytics YouTube"></a>
-  <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="3%" alt="space">
-  <a href="https://www.tiktok.com/@ultralytics"><img src="https://github.com/ultralytics/assets/raw/main/social/logo-social-tiktok.png" width="3%" alt="Ultralytics TikTok"></a>
-  <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="3%" alt="space">
-  <a href="https://ultralytics.com/bilibili"><img src="https://github.com/ultralytics/assets/raw/main/social/logo-social-bilibili.png" width="3%" alt="Ultralytics BiliBili"></a>
-  <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="3%" alt="space">
-  <a href="https://ultralytics.com/discord"><img src="https://github.com/ultralytics/assets/raw/main/social/logo-social-discord.png" width="3%" alt="Ultralytics Discord"></a>
-  <br>
-  <br>
-  <a href="https://apps.apple.com/us/app/idetection/id1452689527" style="text-decoration:none;">
-    <img src="https://raw.githubusercontent.com/ultralytics/assets/main/app/app-store.svg" width="15%" alt="Apple App store"></a>
-</div>
+- **Comprehensive Model Support**: Leverage YOLO11 and other YOLO-based models for:
+  - Object Detection
+  - Image Segmentation
+  - Classification
+  - Pose Estimation
+  - Oriented Bounding Box Detection
+- **Simple API**: Perform complex tasks with just a few lines of code.
+- **Real-Time Capabilities**: Effortlessly set up a real-time camera-based inference view.
+- **Multi-Platform Support**  
+  - **iOS**: Swift + UIKit / SwiftUI  
+  - **Android**: Kotlin + Jetpack / Java + XML  
+  - **Flutter**: Dart
+- **Flexible Outputs**: Bounding boxes, masks, confidence scores, class probabilities, poses, oriented boxes, and annotated images.
+- **Preloaded Models**: Access lightweight YOLO variants (e.g., `yolo11n`).
 
-## 🛠 Quickstart: Setting Up the Ultralytics YOLO iOS App
+---
 
-Getting started with the Ultralytics YOLO iOS App is straightforward. Follow these steps to install the app on your iOS device.
+## 📦 Installation
 
-### Prerequisites
+### iOS (Swift Package Manager)
 
-Ensure you have the following before you start:
+Add the package to your `Package.swift` file:
+```swift
+dependencies: [
+    .package(url: "https://github.com/ultralytics/ultralytics-mobile.git", from: "1.0.0")
+]
+```
 
-- **Xcode:** The Ultralytics YOLO iOS App requires Xcode installed on your macOS machine. Download it from the [Mac App Store](https://apps.apple.com/us/app/xcode/id497799835).
+### Android (Gradle via JitPack)
 
-- **An iOS Device:** For testing the app, you'll need an iPhone or iPad running [iOS 14.0](https://www.apple.com/ios) or later.
+1. Add JitPack to your `repositories` in your root `build.gradle`:
+```gradle
+allprojects {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
 
-- **An Apple Developer Account:** A free Apple Developer account will suffice for device testing. Sign up [here](https://developer.apple.com/) if you haven't already.
+2. Add the dependency to your module-level `build.gradle`:
+```gradle
+dependencies {
+    implementation 'com.github.ultralytics:ultralytics-mobile:1.0.0'
+}
+```
 
-### Installation
+### Flutter (pub.dev)
 
-1. **Clone the Repository:**
+Add this dependency to your `pubspec.yaml`:
+```yaml
+dependencies:
+  ultralytics_mobile: ^1.0.0
+```
+Then run:
+```bash
+flutter pub get
+```
 
-   ```sh
-   git clone https://github.com/ultralytics/yolo-ios-app.git
-   ```
+---
 
-2. **Open the Project in Xcode:**
+## 🛠️ Usage
 
-   Navigate to the cloned directory and open the `YOLO.xcodeproj` file.
+### Single Image Inference
 
-   <p align="center">
-   <img width="50%" src="https://github.com/ultralytics/ultralytics/assets/26833433/e0053238-4a7c-4d18-8720-6ce24c73dea0" alt="XCode load project screenshot">
-   </p>
+#### iOS (Swift)
+```swift
+import ultralytics_mobile
 
-   In Xcode, go to the project's target settings and choose your Apple Developer account under the "Signing & Capabilities" tab.
+// Object detection example
+let model = YOLO("yolo11n", task: .detect)
+let detectionResult = model(someUIImage)
+print(detectionResult.box)
+print(detectionResult.conf)
 
-3. **Add YOLOv8 Models to the Project:**
+// Segmentation example
+let segModel = YOLO("yolo11n", task: .segment)
+let segmentationResult = segModel(someUIImage)
+print(segmentationResult.mask)
 
-   Export CoreML INT8 models using the `ultralytics` Python package (with `pip install ultralytics`), or download them from our [GitHub release assets](https://github.com/ultralytics/yolo-ios-app/releases). You should have 5 YOLOv8 models in total. Place these in the `YOLO/Models` directory as seen in the Xcode screenshot below.
+// Classification example
+let clsModel = YOLO("yolo11n", task: .classify)
+let classificationResult = clsModel(someUIImage)
+print(classificationResult.conf)
+print(classificationResult.classLabel)
 
-   ```python
-   from ultralytics import YOLO
+// Pose estimation example
+let poseModel = YOLO("yolo11n", task: .pose)
+let poseResult = poseModel(someUIImage)
+print(poseResult.keypoints)
 
-   # Loop through all YOLOv8 model sizes
-   for size in ("n", "s", "m", "l", "x"):
-       # Load a YOLOv8 PyTorch model
-       model = YOLO(f"yolov8{size}.pt")
+// Oriented bounding box detection example
+let obbModel = YOLO("yolo11n", task: .obb)
+let obbResult = obbModel(someUIImage)
+print(obbResult.orientedBox)
+```
 
-       # Export the PyTorch model to CoreML INT8 format with NMS layers
-       model.export(format="coreml", int8=True, nms=True, imgsz=[640, 384])
-   ```
+#### Android (Kotlin)
+```kotlin
+import ultralytics_mobile.YOLO
+import ultralytics_mobile.Task
 
-4. **Run the Ultralytics YOLO iOS App:**
+// Object detection example
+val model = YOLO("yolo11n", task = Task.DETECT)
+val detectionResult = model(someBitmap)
+println(detectionResult.box)
+println(detectionResult.conf)
 
-   Connect your iOS device and select it as the run target. Press the Run button to install the app on your device.
+// Segmentation example
+val segModel = YOLO("yolo11n", task = Task.SEGMENT)
+val segmentationResult = segModel(someBitmap)
+println(segmentationResult.mask)
 
-   <p align="center">
-   <img width="100%" src="https://github.com/ultralytics/ultralytics/assets/26833433/d2c6a7b7-fa8b-4130-a57f-4241f7a42ff2" alt="Ultralytics YOLO XCode screenshot">
-   </p>
+// Classification example
+val clsModel = YOLO("yolo11n", task = Task.CLASSIFY)
+val classificationResult = clsModel(someBitmap)
+println(classificationResult.conf)
+println(classificationResult.classLabel)
 
-## 🚀 Usage
+// Pose estimation example
+val poseModel = YOLO("yolo11n", task = Task.POSE)
+val poseResult = poseModel(someBitmap)
+println(poseResult.keypoints)
 
-The Ultralytics YOLO iOS App is designed to be intuitive:
+// Oriented bounding box detection example
+val obbModel = YOLO("yolo11n", task = Task.OBB)
+val obbResult = obbModel(someBitmap)
+println(obbResult.orientedBox)
+```
 
-- **Real-Time Detection:** Launch the app and aim your camera at objects to detect them instantly.
-- **Multiple AI Models:** Select from a range of Ultralytics YOLOv8 models, from YOLOv8n 'nano' to YOLOv8x 'x-large'.
+#### Android (Java)
+```java
+// Example Java usage for object detection
+YOLO model = new YOLO("yolo11n", Task.DETECT);
+Result detectionResult = model.invoke(someBitmap);
+System.out.println(detectionResult.getBox());
+System.out.println(detectionResult.getConf());
+```
 
-## 💡 Contribute
+#### Flutter (Dart)
+```dart
+import 'package:ultralytics_mobile/ultralytics_mobile.dart';
 
-We warmly welcome your contributions to Ultralytics' open-source projects! Your support and contributions significantly impact. Get involved by reviewing our [Contributing Guide](https://docs.ultralytics.com/help/contributing), and share your feedback through our [Survey](https://ultralytics.com/survey?utm_source=github&utm_medium=social&utm_campaign=Survey). A massive thank you 🙏 to everyone who contributes!
+// Object detection example
+final model = YOLO("yolo11n", task: Task.detect);
+final detectionResult = model(someImage);
+print(detectionResult.box);
+print(detectionResult.conf);
 
-<a href="https://github.com/ultralytics/yolov5/graphs/contributors">
-<img width="100%" src="https://github.com/ultralytics/assets/raw/main/im/image-contributors.png" alt="Ultralytics open-source contributors"></a>
+// Segmentation example
+final segModel = YOLO("yolo11n", task: Task.segment);
+final segmentationResult = segModel(someImage);
+print(segmentationResult.mask);
 
-## 📄 License
+// Classification example
+final clsModel = YOLO("yolo11n", task: Task.classify);
+final classificationResult = clsModel(someImage);
+print(classificationResult.conf);
+print(classificationResult.classLabel);
 
-Ultralytics offers two licensing options:
+// Pose estimation example
+final poseModel = YOLO("yolo11n", task: Task.pose);
+final poseResult = poseModel(someImage);
+print(poseResult.keypoints);
 
-- **AGPL-3.0 License**: An [OSI-approved](https://opensource.org/licenses/) open-source license, perfect for academics, researchers, and enthusiasts. It encourages sharing knowledge and collaboration. See the [LICENSE](https://github.com/ultralytics/ultralytics/blob/main/LICENSE) file for details.
+// Oriented bounding box detection example
+final obbModel = YOLO("yolo11n", task: Task.obb);
+final obbResult = obbModel(someImage);
+print(obbResult.orientedBox);
+```
 
-- **Enterprise License**: Designed for commercial use, this license permits integrating Ultralytics software into proprietary products and services. For commercial use, please contact us through [Ultralytics Licensing](https://ultralytics.com/license).
+---
 
-## 🤝 Contact
+### Real-Time Camera Inference
 
-- Submit Ultralytics bug reports and feature requests via [GitHub Issues](https://github.com/ultralytics/yolo-ios-app/issues).
-- Join our [Discord](https://ultralytics.com/discord) for assistance, questions, and discussions with the community and team!
+#### iOS (Swift)
+```swift
+import ultralytics_mobile
 
-<br>
-<div align="center">
-  <a href="https://github.com/ultralytics"><img src="https://github.com/ultralytics/assets/raw/main/social/logo-social-github.png" width="3%" alt="Ultralytics GitHub"></a>
-  <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="3%" alt="space">
-  <a href="https://www.linkedin.com/company/ultralytics/"><img src="https://github.com/ultralytics/assets/raw/main/social/logo-social-linkedin.png" width="3%" alt="Ultralytics LinkedIn"></a>
-  <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="3%" alt="space">
-  <a href="https://twitter.com/ultralytics"><img src="https://github.com/ultralytics/assets/raw/main/social/logo-social-twitter.png" width="3%" alt="Ultralytics Twitter"></a>
-  <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="3%" alt="space">
-  <a href="https://youtube.com/ultralytics?sub_confirmation=1"><img src="https://github.com/ultralytics/assets/raw/main/social/logo-social-youtube.png" width="3%" alt="Ultralytics YouTube"></a>
-  <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="3%" alt="space">
-  <a href="https://www.tiktok.com/@ultralytics"><img src="https://github.com/ultralytics/assets/raw/main/social/logo-social-tiktok.png" width="3%" alt="Ultralytics TikTok"></a>
-  <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="3%" alt="space">
-  <a href="https://ultralytics.com/bilibili"><img src="https://github.com/ultralytics/assets/raw/main/social/logo-social-bilibili.png" width="3%" alt="Ultralytics BiliBili"></a>
-  <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="3%" alt="space">
-  <a href="https://ultralytics.com/discord"><img src="https://github.com/ultralytics/assets/raw/main/social/logo-social-discord.png" width="3%" alt="Ultralytics Discord"></a>
-</div>
+// e.g. Real-time object detection
+let yoloView = YOLOView("yolo11n", task: .detect)
+view.addSubview(yoloView)
+```
+
+#### Android (Kotlin)
+```kotlin
+import ultralytics_mobile.YOLOView
+import ultralytics_mobile.Task
+
+val yoloView = YOLOView("yolo11n", task = Task.DETECT)
+addContentView(yoloView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+```
+
+#### Flutter (Dart)
+```dart
+import 'package:ultralytics_mobile/ultralytics_mobile.dart';
+
+final yoloView = YOLOView("yolo11n", task: Task.detect);
+addWidget(yoloView); // Replace with your preferred layout method
+```
+
+---
+
+## 📤 Output Format
+
+Depending on the **task**:
+
+- **Object Detection (`.detect`)**  
+  - `box`: Bounding box coordinates  
+  - `conf`: Confidence score  
+
+- **Segmentation (`.segment`)**  
+  - `mask`: Segmentation mask  
+  - `conf`: Confidence score  
+
+- **Classification (`.classify`)**  
+  - `classLabel`: Predicted class label  
+  - `conf`: Confidence score  
+
+- **Pose Estimation (`.pose`)**  
+  - `keypoints`: Detected pose keypoints  
+  - `conf`: Confidence score  
+
+- **Oriented Bounding Box Detection (`.obb`)**  
+  - `orientedBox`: Coordinates or vertices of oriented bounding boxes  
+  - `conf`: Confidence score  
+
+- **`annotatedimage`** (optional)  
+  - Visual representation of the results drawn on the image
+
+---
+
+## 🧪 Sample Apps
+
+We provide fully functional sample apps for each platform to help you get started:
+
+1. **Single Image Inference**:
+   - iOS: Swift (UIKit, SwiftUI)
+   - Android: Kotlin (Jetpack), Java (XML)
+   - Flutter: Dart
+
+2. **Real-Time Inference** (e.g., object detection, segmentation, etc.):
+   - Includes real-time YOLO inference samples for all platforms.
+
+👉 [Explore the Samples](https://github.com/ultralytics/ultralytics-mobile/samples)
+
+---
+
+## 📖 Documentation
+
+For detailed API references and advanced usage guides, check out our [Wiki](https://github.com/ultralytics/ultralytics-mobile/wiki).
+
+---
+
+## 💡 Contributing
+
+We welcome contributions to **ultralytics-mobile**! Here's how you can help:
+1. Report bugs or suggest features via [Issues](https://github.com/ultralytics/ultralytics-mobile/issues).
+2. Submit pull requests to enhance functionality or fix bugs.
+3. Spread the word and star this repo ⭐!
+
+---
+
+## 📜 License
+
+This project is licensed under the **MIT License**. See the [LICENSE](https://github.com/ultralytics/ultralytics-mobile/blob/main/LICENSE) file for details.
+
+---
+
+## 📬 Contact
+
+For questions or support, feel free to [open an issue](https://github.com/ultralytics/ultralytics-mobile/issues) or reach out to our team at **support@ultralytics.com**.
+
+---
+
+### Made with ❤️ by [Ultralytics](https://ultralytics.com)
