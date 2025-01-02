@@ -3,7 +3,7 @@ import Vision
 import AVFoundation
 
 public class YOLOView: UIView, VideoCaptureDelegate{
-    func videoCapture(_ capture: VideoCapture, didCaptureVideoFrame: CMSampleBuffer) {
+    nonisolated func videoCapture(_ capture: VideoCapture, didCaptureVideoFrame: CMSampleBuffer) {
         predictOnFrame(sampleBuffer: didCaptureVideoFrame)
     }
     
