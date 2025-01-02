@@ -4,14 +4,25 @@ import AVFoundation
 public struct YOLOCamera: View {
     @State private var yoloResult: YOLOResult?
     
-    let modelPath: String
-    let task: YOLOTask
-    let cameraPosition: AVCaptureDevice.Position
+    public let modelPathOrName: String
+    public let task: YOLOTask
+    public let cameraPosition: AVCaptureDevice.Position
+    
+    public init(
+        modelPathOrName: String,
+        task: YOLOTask = .detect,
+        cameraPosition: AVCaptureDevice.Position = .back
+    ) {
+        self.modelPathOrName = modelPath
+        self.task = task
+        self.cameraPosition = cameraPosition
+    }
+
     
     var body: some View {
         ZStack {
             YOLOViewRepresentable(
-                modelPathOrName: modelPath,
+                modelPathOrName: modelPathOrName,
                 task: task,
                 cameraPosition: cameraPosition
             ) { result in
