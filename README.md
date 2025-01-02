@@ -76,30 +76,7 @@ import ultralytics_mobile
 
 // Object detection example
 let model = YOLO("yolo11n", task: .detect)
-let detectionResult = model(someUIImage)
-print(detectionResult.box)
-print(detectionResult.conf)
-
-// Segmentation example
-let segModel = YOLO("yolo11n", task: .segment)
-let segmentationResult = segModel(someUIImage)
-print(segmentationResult.mask)
-
-// Classification example
-let clsModel = YOLO("yolo11n", task: .classify)
-let classificationResult = clsModel(someUIImage)
-print(classificationResult.conf)
-print(classificationResult.classLabel)
-
-// Pose estimation example
-let poseModel = YOLO("yolo11n", task: .pose)
-let poseResult = poseModel(someUIImage)
-print(poseResult.keypoints)
-
-// Oriented bounding box detection example
-let obbModel = YOLO("yolo11n", task: .obb)
-let obbResult = obbModel(someUIImage)
-print(obbResult.orientedBox)
+let result = model(someUIImage)
 ```
 
 #### Android (Kotlin)
@@ -109,39 +86,7 @@ import ultralytics_mobile.Task
 
 // Object detection example
 val model = YOLO("yolo11n", task = Task.DETECT)
-val detectionResult = model(someBitmap)
-println(detectionResult.box)
-println(detectionResult.conf)
-
-// Segmentation example
-val segModel = YOLO("yolo11n", task = Task.SEGMENT)
-val segmentationResult = segModel(someBitmap)
-println(segmentationResult.mask)
-
-// Classification example
-val clsModel = YOLO("yolo11n", task = Task.CLASSIFY)
-val classificationResult = clsModel(someBitmap)
-println(classificationResult.conf)
-println(classificationResult.classLabel)
-
-// Pose estimation example
-val poseModel = YOLO("yolo11n", task = Task.POSE)
-val poseResult = poseModel(someBitmap)
-println(poseResult.keypoints)
-
-// Oriented bounding box detection example
-val obbModel = YOLO("yolo11n", task = Task.OBB)
-val obbResult = obbModel(someBitmap)
-println(obbResult.orientedBox)
-```
-
-#### Android (Java)
-```java
-// Example Java usage for object detection
-YOLO model = new YOLO("yolo11n", Task.DETECT);
-Result detectionResult = model.invoke(someBitmap);
-System.out.println(detectionResult.getBox());
-System.out.println(detectionResult.getConf());
+val result = model(someBitmap)
 ```
 
 #### Flutter (Dart)
@@ -150,46 +95,38 @@ import 'package:ultralytics_mobile/ultralytics_mobile.dart';
 
 // Object detection example
 final model = YOLO("yolo11n", task: Task.detect);
-final detectionResult = model(someImage);
-print(detectionResult.box);
-print(detectionResult.conf);
-
-// Segmentation example
-final segModel = YOLO("yolo11n", task: Task.segment);
-final segmentationResult = segModel(someImage);
-print(segmentationResult.mask);
-
-// Classification example
-final clsModel = YOLO("yolo11n", task: Task.classify);
-final classificationResult = clsModel(someImage);
-print(classificationResult.conf);
-print(classificationResult.classLabel);
-
-// Pose estimation example
-final poseModel = YOLO("yolo11n", task: Task.pose);
-final poseResult = poseModel(someImage);
-print(poseResult.keypoints);
-
-// Oriented bounding box detection example
-final obbModel = YOLO("yolo11n", task: Task.obb);
-final obbResult = obbModel(someImage);
-print(obbResult.orientedBox);
+final result = model(someImage);
 ```
 
 ---
 
 ### Real-Time Camera Inference
 
-#### iOS (Swift)
+#### iOS (UIKit)
 ```swift
 import ultralytics_mobile
 
-// e.g. Real-time object detection
+// Real-time object detection
 let yoloView = YOLOView("yolo11n", task: .detect)
 view.addSubview(yoloView)
 ```
 
-#### Android (Kotlin)
+#### iOS (SwiftUI)
+```swift
+import ultralytics_mobile
+
+struct ContentView: View {
+    var body: some View {
+        YOLOCamera(
+                   modelPath: "yolo11n",
+                   task: .detect,
+                   cameraPosition: .back
+               )
+    }
+}
+```
+
+#### Android (Jetpack Compose)
 ```kotlin
 import ultralytics_mobile.YOLOView
 import ultralytics_mobile.Task
@@ -205,37 +142,6 @@ import 'package:ultralytics_mobile/ultralytics_mobile.dart';
 final yoloView = YOLOView("yolo11n", task: Task.detect);
 addWidget(yoloView); // Replace with your preferred layout method
 ```
-
----
-
-## 📤 Output Format
-
-Depending on the **task**:
-
-- **Object Detection (`.detect`)**  
-  - `box`: Bounding box coordinates  
-  - `conf`: Confidence score  
-
-- **Segmentation (`.segment`)**  
-  - `mask`: Segmentation mask  
-  - `conf`: Confidence score  
-
-- **Classification (`.classify`)**  
-  - `classLabel`: Predicted class label  
-  - `conf`: Confidence score  
-
-- **Pose Estimation (`.pose`)**  
-  - `keypoints`: Detected pose keypoints  
-  - `conf`: Confidence score  
-
-- **Oriented Bounding Box Detection (`.obb`)**  
-  - `orientedBox`: Coordinates or vertices of oriented bounding boxes  
-  - `conf`: Confidence score  
-
-- **`annotatedimage`** (optional)  
-  - Visual representation of the results drawn on the image
-
----
 
 ## 🧪 Sample Apps
 
