@@ -240,9 +240,9 @@ public class YOLOView: UIView, VideoCaptureDelegate{
     }
 }
 
-extension YOLOView: ResultsListener, InferenceTimeListener, FpsRateListener {
+public extension YOLOView: ResultsListener, InferenceTimeListener, FpsRateListener {
     
-    func on(predictions: [[String : Any]]) {
+    public func on(predictions: [[String : Any]]) {
         showBoxes(predictions: predictions)
         var boxes: [Box] = []
         for prediction in predictions {
@@ -259,11 +259,11 @@ extension YOLOView: ResultsListener, InferenceTimeListener, FpsRateListener {
         onDetection?(result)
     }
     
-    func on(inferenceTime: Double) {
+    public func on(inferenceTime: Double) {
         
     }
     
-    func on(fpsRate: Double) {
+    public func on(fpsRate: Double) {
         
     }
     
