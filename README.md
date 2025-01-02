@@ -1,6 +1,6 @@
-# 🔥 ultralytics-mobile
+# 🔥 Ultralytics-Mobile
 
-**ultralytics-mobile** is a lightweight, multi-platform library — supporting **Swift**, **Kotlin**, **Java**, and **Dart** — designed to make using **YOLO11** and other YOLO-based models on mobile devices seamless and intuitive. This library supports **object detection**, **segmentation**, **classification**, **pose estimation**, **oriented bounding box detection**, and more — all in real-time or on single images. Compatible with **iOS**, **Android**, and **Flutter**.
+**Ultralytics-Mobile** is a lightweight, multi-platform library — supporting **Swift**, **Kotlin**, **Java**, and **Dart** — designed to make using **YOLO11** and other YOLO-based models on mobile devices seamless and intuitive. This library supports **object detection**, **segmentation**, **classification**, **pose estimation**, **oriented bounding box detection**, and more — all in real-time or on single images. Compatible with **iOS**, **Android**, and **Flutter**.
 
 ---
 
