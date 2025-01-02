@@ -17,7 +17,7 @@ protocol FpsRateListener {
 }
 
 protocol Predictor{
-    func predict(sampleBuffer: CMSampleBuffer, onResultsListener: ResultsListener?, onInferenceTime: InferenceTimeListener?, onFpsRate: FpsRateListener?)
+    func predict(sampleBuffer: CMSampleBuffer, orientation:CGImagePropertyOrientation, onResultsListener: ResultsListener?, onInferenceTime: InferenceTimeListener?, onFpsRate: FpsRateListener?)
     func predictOnImage(image: CIImage) -> YOLOResult
     var labels: [String] { get set }
 }

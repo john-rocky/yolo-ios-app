@@ -109,7 +109,7 @@ public class ObjectDetector: Predictor {
         }()
     }
     
-    public func predict(sampleBuffer: CMSampleBuffer, onResultsListener: ResultsListener?, onInferenceTime: InferenceTimeListener?, onFpsRate: FpsRateListener?) {
+    public func predict(sampleBuffer: CMSampleBuffer, orientation:CGImagePropertyOrientation, onResultsListener: ResultsListener?, onInferenceTime: InferenceTimeListener?, onFpsRate: FpsRateListener?) {
         if currentBuffer == nil, let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
             currentBuffer = pixelBuffer
             inputSize = CGSize(width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer))
@@ -117,28 +117,8 @@ public class ObjectDetector: Predictor {
             currentOnInferenceTimeListener = onInferenceTime
             currentOnFpsRateListener = onFpsRate
             
-            /// - Tag: MappingOrientation
-            // The frame is always oriented based on the camera sensor,
-            // so in most cases Vision needs to rotate it for the model to work as expected.
-            let imageOrientation: CGImagePropertyOrientation
-            switch UIDevice.current.orientation {
-            case .portrait:
-                imageOrientation = .up
-            case .portraitUpsideDown:
-                imageOrientation = .down
-            case .landscapeLeft:
-                imageOrientation = .left
-            case .landscapeRight:
-                imageOrientation = .right
-            case .unknown:
-                print("The device orientation is unknown, the predictions may be affected")
-                fallthrough
-            default:
-                imageOrientation = .up
-            }
-            
             // Invoke a VNRequestHandler with that image
-            let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: imageOrientation, options: [:])
+            let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: orientation, options: [:])
             t0 = CACurrentMediaTime()  // inference start
             do {
                 if(visionRequest != nil){

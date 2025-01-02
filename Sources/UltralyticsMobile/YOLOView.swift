@@ -88,17 +88,18 @@ public class YOLOView: UIView{
             case .portraitUpsideDown:
                 imageOrientation = .down
             case .landscapeLeft:
-                imageOrientation = .up
+                imageOrientation = .left
             case .landscapeRight:
-                imageOrientation = .up
+                imageOrientation = .right
             case .unknown:
-                imageOrientation = .up
-                
+                print("The device orientation is unknown, the predictions may be affected")
+                fallthrough
             default:
                 imageOrientation = .up
             }
+
             
-            predictor.predict(sampleBuffer: sampleBuffer, onResultsListener: self, onInferenceTime: self, onFpsRate: self)
+            predictor.predict(sampleBuffer: sampleBuffer, orientation: imageOrientation,onResultsListener: self, onInferenceTime: self, onFpsRate: self)
             currentBuffer = nil
         }
     }
