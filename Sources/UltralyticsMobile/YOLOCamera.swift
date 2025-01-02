@@ -1,7 +1,7 @@
 import SwiftUI
 import AVFoundation
 
-struct YOLOCamera: View {
+public struct YOLOCamera: View {
     @State private var yoloResult: YOLOResult?
     
     let modelPath: String
