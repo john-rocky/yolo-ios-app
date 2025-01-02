@@ -2,7 +2,7 @@ import Foundation
 import Vision
 import UIKit
 
-public class ObjectDetector: Predictor {
+class ObjectDetector: Predictor {
     private var detector: VNCoreMLModel!
     private var visionRequest: VNCoreMLRequest?
     private var currentBuffer: CVPixelBuffer?
@@ -18,7 +18,7 @@ public class ObjectDetector: Predictor {
     var t4 = 0.0  // FPS dt smoothed
     private var isSync = false
     
-    public init(modelPathOrName: String) {
+    init(modelPathOrName: String) {
         
         var modelURL: URL?
         
@@ -109,7 +109,7 @@ public class ObjectDetector: Predictor {
         }()
     }
     
-    public func predict(sampleBuffer: CMSampleBuffer, orientation:CGImagePropertyOrientation, onResultsListener: ResultsListener?, onInferenceTime: InferenceTimeListener?, onFpsRate: FpsRateListener?) {
+    func predict(sampleBuffer: CMSampleBuffer, orientation:CGImagePropertyOrientation, onResultsListener: ResultsListener?, onInferenceTime: InferenceTimeListener?, onFpsRate: FpsRateListener?) {
         if currentBuffer == nil, let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
             currentBuffer = pixelBuffer
             inputSize = CGSize(width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer))
@@ -135,19 +135,19 @@ public class ObjectDetector: Predictor {
     }
     
     private var confidenceThreshold = 0.2
-    public func setConfidenceThreshold(confidence: Double) {
+    func setConfidenceThreshold(confidence: Double) {
         confidenceThreshold = confidence
         detector.featureProvider = ThresholdProvider(iouThreshold: iouThreshold, confidenceThreshold: confidenceThreshold)
     }
     
     private var iouThreshold = 0.4
-    public func setIouThreshold(iou: Double){
+    func setIouThreshold(iou: Double){
         iouThreshold = iou
         detector.featureProvider = ThresholdProvider(iouThreshold: iouThreshold, confidenceThreshold: confidenceThreshold)
     }
     
     private var numItemsThreshold = 30
-    public func setNumItemsThreshold(numItems: Int){
+    func setNumItemsThreshold(numItems: Int){
         numItemsThreshold = numItems
     }
     
@@ -190,7 +190,7 @@ public class ObjectDetector: Predictor {
         }
     }
     
-    public func predictOnImage(image: CIImage) -> YOLOResult {
+    func predictOnImage(image: CIImage) -> YOLOResult {
         let requestHandler = VNImageRequestHandler(ciImage: image, options: [:])
         guard let request = visionRequest else {
             let emptyResult = YOLOResult(orig_shape: inputSize, boxes: [])
