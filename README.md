@@ -27,12 +27,7 @@
 
 ### iOS (Swift Package Manager)
 
-Add the package to your `Package.swift` file:
-```swift
-dependencies: [
-    .package(url: "https://github.com/ultralytics/ultralytics-mobile.git", from: "1.0.0")
-]
-```
+Add the package from add package dependencies.
 
 ### Android (Gradle via JitPack)
 
