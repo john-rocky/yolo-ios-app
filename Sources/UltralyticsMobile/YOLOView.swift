@@ -83,7 +83,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
                 if success {
                     // Add the video preview into the UI.
                     if let previewLayer = self.videoCapture.previewLayer {
-                        self.layer.addSublayer(previewLayer)
+                        self.layer.insertSublayer(previewLayer, at: 0)
                         self.videoCapture.previewLayer?.frame = self.bounds  // resize preview layer
                         for box in self.boundingBoxViews {
                             box.addToLayer(previewLayer)
