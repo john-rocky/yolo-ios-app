@@ -239,32 +239,38 @@ public class YOLOView: UIView, VideoCaptureDelegate{
     }
     
     private func setupUI() {
+        labelName = UILabel()
         labelName.text = "Label"
         labelName.textAlignment = .center
         labelName.font = UIFont.systemFont(ofSize: 24, weight: .bold)
         labelName.textColor = .white
         self.addSubview(labelName)
         
+        labelFPS = UILabel()
         labelFPS.text = "Label"
         labelFPS.textAlignment = .center
         labelFPS.textColor = .white
         self.addSubview(labelFPS)
         
+        slider = UISlider()
         slider.minimumValue = 0
         slider.maximumValue = 100
         slider.value = 30
         self.addSubview(slider)
         
+        sliderConf = UISlider()
         sliderConf.minimumValue = 0
         sliderConf.maximumValue = 1
         sliderConf.value = 0.25
         self.addSubview(sliderConf)
         
+        sliderIoU = UISlider()
         sliderIoU.minimumValue = 0
         sliderIoU.maximumValue = 1
         sliderIoU.value = 0.45
         self.addSubview(sliderIoU)
         
+        labelZoom = UILabel()
         labelZoom.text = "1.00x"
         labelZoom.textColor = .white
         labelZoom.font = UIFont.systemFont(ofSize: 14)
