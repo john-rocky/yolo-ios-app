@@ -172,7 +172,6 @@ public class YOLOView: UIView, VideoCaptureDelegate{
     func showBoxes(predictions: YOLOResult) {
         let width = self.bounds.width
         let height = self.bounds.height
-        var str = ""
         
         var ratio: CGFloat = 1.0
         
@@ -359,6 +358,26 @@ public class YOLOView: UIView, VideoCaptureDelegate{
             action: #selector(switchCameraTapped)
         )
         
+        playButton.setTitleTextAttributes(
+            [NSAttributedString.Key.foregroundColor: UIColor.lightGray],
+            for: .normal
+        )
+        playButton.setTitleTextAttributes(
+            [NSAttributedString.Key.foregroundColor: UIColor.darkGray],
+            for: .disabled
+        )
+        pauseButton.setTitleTextAttributes(
+            [NSAttributedString.Key.foregroundColor: UIColor.lightGray],
+            for: .normal
+        )
+        pauseButton.setTitleTextAttributes(
+            [NSAttributedString.Key.foregroundColor: UIColor.darkGray],
+            for: .disabled
+        )
+        switchCameraButton.setTitleTextAttributes(
+            [NSAttributedString.Key.foregroundColor: UIColor.lightGray],
+            for: .normal
+        )
         playButton.isEnabled = false
         pauseButton.isEnabled = true
 
