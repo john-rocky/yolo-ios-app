@@ -216,8 +216,8 @@ class ObjectDetector: Predictor {
         self.inputSize = CGSize(width: imageWidth, height: imageHeight)
         
         do {
-            try requestHandler.perform([request])
-            if let results = request.results as? [VNRecognizedObjectObservation] {
+            try requestHandler.perform([visionRequest])
+            if let results = visionRequest.results as? [VNRecognizedObjectObservation] {
                 for i in 0..<100 {
                     if i < results.count && i < self.numItemsThreshold {
                         let prediction = results[i]
