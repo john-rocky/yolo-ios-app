@@ -5,7 +5,7 @@ import Vision
 
 @MainActor
 protocol VideoCaptureDelegate: AnyObject {
-    func onPredict(result: PredictionsWrapper)
+    func onPredict(result: YOLOResult)
 }
 
 func bestCaptureDevice(position: AVCaptureDevice.Position) -> AVCaptureDevice {
@@ -196,23 +196,9 @@ extension VideoCapture: AVCapturePhotoCaptureDelegate {
 
 extension VideoCapture: ResultsListener, InferenceTimeListener, FpsRateListener {
     
-    func on(result: [String : Any]) {
-        var fps:Double = 0
-        var speed:Double = 0
-        var predictions = [[String: Any]]()
-        if let fpsResult = result["fps"] as? Double {
-            fps = fpsResult
-        }
-        if let speedResult = result["speed"] as? Double {
-            speed = speedResult
-        }
-        if let predictionsResult = result["predictions"] as? [[String: Any]] {
-            predictions = predictionsResult
-        }
-        let pred = PredictionsWrapper(fps: fps, speed: speed, predictions: predictions)
-
+    func on(result: YOLOResult) {
         DispatchQueue.main.async {
-            self.delegate?.onPredict(result: pred)
+            self.delegate?.onPredict(result: result)
         }
     }
     

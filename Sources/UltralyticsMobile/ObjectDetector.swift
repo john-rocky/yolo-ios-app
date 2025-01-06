@@ -158,25 +158,21 @@ class ObjectDetector: Predictor {
     
     func processObservations(for request: VNRequest, error: Error?) {
             if let results = request.results as? [VNRecognizedObjectObservation] {
-                var result: [String:Any] = [:]
-                var recognitions: [[String:Any]] = []
-                
+                var boxes = [Box]()
+
                 for i in 0..<100 {
                     if i < results.count && i < self.numItemsThreshold {
                         let prediction = results[i]
-                        
-                        var rect = prediction.boundingBox  // normalized xywh, origin lower left
+                        let invertedBox = CGRect(x: prediction.boundingBox.minX, y: 1-prediction.boundingBox.maxY, width: prediction.boundingBox.width, height: prediction.boundingBox.height)
+                        let imageRect = VNImageRectForNormalizedRect(invertedBox, Int(inputSize.width), Int(inputSize.height))
                         
                         // The labels array is a list of VNClassificationObservation objects,
                         // with the highest scoring class first in the list.
                         let label = prediction.labels[0].identifier
                         let index = self.labels.firstIndex(of: label) ?? 0
                         let confidence = prediction.labels[0].confidence
-                        recognitions.append(["label": label,
-                                             "confidence": confidence,
-                                             "index": index,
-                                             "box": rect
-                                             ])
+                        let box = Box(index: index, cls: label, conf: confidence, xywh: imageRect, xywhn: invertedBox)
+                        boxes.append(box)
                     }
                 }
                 
@@ -189,9 +185,11 @@ class ObjectDetector: Predictor {
 
                 self.currentOnInferenceTimeListener?.on(inferenceTime: self.t2 * 1000)  // t2 seconds to ms
                 self.currentOnFpsRateListener?.on(fpsRate: 1 / self.t4)
-                result["recognitions"] = recognitions
-                result["speed"] = self.t2 * 1000
-                result["fps"] = 1 / self.t4
+//                result["recognitions"] = recognitions
+//                result["speed"] = self.t2 * 1000
+//                result["fps"] = 1 / self.t4
+                let result = YOLOResult(orig_shape: inputSize, boxes: boxes, speed: self.t2, fps: 1 / self.t4)
+
                 self.currentOnResultsListener?.on(result: result)
 
             }
@@ -200,7 +198,7 @@ class ObjectDetector: Predictor {
     func predictOnImage(image: CIImage) -> YOLOResult {
         let requestHandler = VNImageRequestHandler(ciImage: image, options: [:])
         guard let request = visionRequest else {
-            let emptyResult = YOLOResult(orig_shape: inputSize, boxes: [])
+            let emptyResult = YOLOResult(orig_shape: inputSize, boxes: [], speed: 0)
             return emptyResult
         }
         var boxes = [Box]()
@@ -231,7 +229,7 @@ class ObjectDetector: Predictor {
         } catch {
             print(error)
         }
-        let result = YOLOResult(orig_shape: inputSize, boxes: boxes)
+        let result = YOLOResult(orig_shape: inputSize, boxes: boxes, speed: t1)
         return result
     }
 }

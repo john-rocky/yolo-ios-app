@@ -5,26 +5,29 @@ import AVFoundation
 public class YOLOView: UIView, VideoCaptureDelegate{
     
     
-    func onPredict(result: PredictionsWrapper) {
-        let predictions = result.predictions
-        showBoxes(predictions: predictions)
-        var boxes: [Box] = []
-        for prediction in predictions {
-            let rect = prediction["box"] as! CGRect
-            let bestClass = prediction["label"] as! String
-            let confidence = CGFloat(prediction["confidence"] as! VNConfidence)
-            let index = self.predictor.labels.firstIndex(of: bestClass) ?? 0
-            let invertBox = CGRect(x: rect.minX, y: 1-rect.maxY, width: rect.width, height: rect.height)
-            let imageBox = VNImageRectForNormalizedRect(invertBox, Int(1280), Int(720))
-            let box = Box(index: index, cls: bestClass, conf: Float(confidence), xywh: imageBox, xywhn: invertBox)
-            boxes.append(box)
-        }
+    func onPredict(result: YOLOResult) {
+//        let predictions = result.boxes
+        showBoxes(predictions: result)
+//        var boxes: [Box] = []
+//        for prediction in predictions {
+//            let rect = prediction["box"] as! CGRect
+//            let bestClass = prediction["label"] as! String
+//            let confidence = CGFloat(prediction["confidence"] as! VNConfidence)
+//            let index = self.predictor.labels.firstIndex(of: bestClass) ?? 0
+//            let invertBox = CGRect(x: rect.minX, y: 1-rect.maxY, width: rect.width, height: rect.height)
+//            let imageBox = VNImageRectForNormalizedRect(invertBox, Int(1280), Int(720))
+//            let box = Box(index: index, cls: bestClass, conf: Float(confidence), xywh: imageBox, xywhn: invertBox)
+//            boxes.append(box)
+//        }
         let speed = result.speed
-        let fps = result.fps
+        var fps: Double = 0
+        if let fpsResult = result.fps {
+            fps = fpsResult
+        }
         DispatchQueue.main.async {
             self.labelFPS.text = String(format: "%.1f FPS - %.1f ms", fps, speed)  // t2 seconds to ms
         }
-        let result = YOLOResult(orig_shape: CGSize(width: 1280, height: 720), boxes: boxes)
+//        let result = YOLOResult(orig_shape: CGSize(width: 1280, height: 720), boxes: boxes, speed: <#Double#>)
         onDetection?(result)
     }
     
@@ -149,7 +152,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         }
     }
     
-    func showBoxes(predictions: [[String : Any]]) {
+    func showBoxes(predictions: YOLOResult) {
         let width = self.bounds.width
         let height = self.bounds.height
         var str = ""
@@ -175,7 +178,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         
         switch task {
         case .detect:
-            resultCount = predictions.count
+            resultCount = predictions.boxes.count
         }
         //        self.labelSlider.text = String(resultCount) + " items (max " + String(Int(slider.value)) + ")"
         for i in 0..<boundingBoxViews.count {
@@ -189,10 +192,10 @@ public class YOLOView: UIView, VideoCaptureDelegate{
                 var bestClass = ""
                 switch task {
                 case .detect:
-                    let prediction = predictions[i]
-                    rect = prediction["box"] as! CGRect
-                    bestClass = prediction["label"] as! String
-                    confidence = CGFloat(prediction["confidence"] as! VNConfidence)
+                    let prediction = predictions.boxes[i]
+                    rect = prediction.xywhn
+                    bestClass = prediction.cls
+                    confidence = CGFloat(prediction.conf)
                     label = String(format: "%@ %.1f", bestClass, confidence * 100)
                     boxColor = colors[bestClass] ?? UIColor.white
                     alpha = CGFloat((confidence - 0.2) / (1.0 - 0.2) * 0.9)
