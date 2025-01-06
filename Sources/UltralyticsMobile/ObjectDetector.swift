@@ -4,7 +4,17 @@ import UIKit
 
 class ObjectDetector: Predictor {
     private var detector: VNCoreMLModel!
-    private var visionRequest: VNCoreMLRequest?
+    private lazy var visionRequest: VNCoreMLRequest = {
+      let request = VNCoreMLRequest(
+        model: detector,
+        completionHandler: {
+          [weak self] request, error in
+          self?.processObservations(for: request, error: error)
+        })
+      // NOTE: BoundingBoxView object scaling depends on request.imageCropAndScaleOption https://developer.apple.com/documentation/vision/vnimagecropandscaleoption
+      request.imageCropAndScaleOption = .scaleFill  // .scaleFit, .scaleFill, .centerCrop
+      return request
+    }()
     private var currentBuffer: CVPixelBuffer?
     private var currentOnResultsListener: ResultsListener?
     private var currentOnInferenceTimeListener: InferenceTimeListener?

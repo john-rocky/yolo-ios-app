@@ -312,6 +312,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         labelZoom.text = "1.00x"
         labelZoom.textColor = .black
         labelZoom.font = UIFont.systemFont(ofSize: 14)
+        labelZoom.textAlignment = .center
         self.addSubview(labelZoom)
         
         self.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(pinch)))

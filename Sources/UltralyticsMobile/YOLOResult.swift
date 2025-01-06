@@ -6,6 +6,7 @@ public struct YOLOResult {
     public let orig_shape: CGSize
     public let boxes: [Box]
     public var annotatedImage: UIImage?
+    public var speed: Float
 //    let masks: [CGImage]
 //    let keypoints: [Keypoint]
 }
