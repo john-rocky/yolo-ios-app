@@ -31,6 +31,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
     var task = YOLOTask.detect
     var predictor: Predictor!
     var colors: [String: UIColor] = [:]
+    var modelName: String = ""
     var classes: [String] = []
     let maxBoundingBoxViews = 100
     var boundingBoxViews = [BoundingBoxView]()
@@ -101,8 +102,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
             fatalError(PredictorError.modelFileNotFound.localizedDescription)
         }
         
-        let modelName = unwrappedModelURL.deletingPathExtension().lastPathComponent
-        self.labelName.text = modelName
+        modelName = unwrappedModelURL.deletingPathExtension().lastPathComponent
         switch task {
         case .detect:
             predictor = ObjectDetector(unwrappedModelURL: unwrappedModelURL)
@@ -269,7 +269,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
     
     private func setupUI() {
         labelName = UILabel()
-        labelName.text = "Label"
+        labelName.text = modelName
         labelName.textAlignment = .center
         labelName.font = UIFont.systemFont(ofSize: 24, weight: .bold)
         labelName.textColor = .black
