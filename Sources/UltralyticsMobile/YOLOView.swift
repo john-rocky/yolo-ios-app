@@ -49,7 +49,8 @@ public class YOLOView: UIView, VideoCaptureDelegate{
     public var playButton: UIBarButtonItem!
     public var pauseButton: UIBarButtonItem!
     public var switchCameraButton: UIBarButtonItem!
-    
+    let selection = UISelectionFeedbackGenerator()
+
     private let minimumZoom: CGFloat = 1.0
     private let maximumZoom: CGFloat = 10.0
     private var lastZoomFactor: CGFloat = 1.0
@@ -338,11 +339,37 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         labelZoom.textAlignment = .center
         self.addSubview(labelZoom)
         
+        toolBar = UIToolbar()
+        playButton = UIBarButtonItem(
+            image: UIImage(systemName: "play.fill"),
+            style: .plain,
+            target: self,
+            action: #selector(playTapped)
+        )
+        pauseButton = UIBarButtonItem(
+            image: UIImage(systemName: "pause.fill"),
+            style: .plain,
+            target: self,
+            action: #selector(pauseTapped)
+        )
+        switchCameraButton = UIBarButtonItem(
+            image: UIImage(systemName: "camera.rotate"),
+            style: .plain,
+            target: self,
+            action: #selector(switchCameraTapped)
+        )
+        
+        playButton.isEnabled = false
+        pauseButton.isEnabled = true
+
+        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        toolBar.setItems([playButton, pauseButton, flexibleSpace, switchCameraButton], animated: false)
+        self.addSubview(toolBar)
+
         self.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(pinch)))
     }
     
     public override func layoutSubviews() {
-        
         
         let width = bounds.width
         let height = bounds.height
@@ -370,14 +397,14 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         
         labelSliderNumItems.frame = CGRect(
             x: width * 0.05,
-            y: labelName.frame.maxY + 20,
+            y: labelName.frame.maxY + 30,
             width: sliderWidth,
             height: sliderHeight
         )
 
         sliderNumItems.frame = CGRect(
             x: width * 0.05,
-            y: labelSliderNumItems.frame.maxY + 5,
+            y: labelSliderNumItems.frame.maxY,
             width: sliderWidth,
             height: sliderHeight
         )
@@ -391,7 +418,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         
         sliderConf.frame = CGRect(
             x: width * 0.05,
-            y: labelSliderConf.frame.maxY + 5,
+            y: labelSliderConf.frame.maxY,
             width: sliderWidth,
             height: sliderHeight
         )
@@ -405,7 +432,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         
         sliderIoU.frame = CGRect(
             x: width * 0.05,
-            y: labelSliderIoU.frame.maxY + 5,
+            y: labelSliderIoU.frame.maxY,
             width: sliderWidth,
             height: sliderHeight
         )
@@ -417,6 +444,14 @@ public class YOLOView: UIView, VideoCaptureDelegate{
             y: self.bounds.maxY - 40,
             width: zoomLabelWidth,
             height: height * 0.03
+        )
+        
+        let toolBarHeight: CGFloat = 44
+        toolBar.frame = CGRect(
+            x: 0,
+            y: height - toolBarHeight,
+            width: width,
+            height: toolBarHeight
         )
     }
     
@@ -495,7 +530,55 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         self.labelZoom.font = UIFont.preferredFont(forTextStyle: .body)
       default: break
       }
-    }  // Pin
+    }
+    
+    @objc func playTapped() {
+        selection.selectionChanged()
+        self.videoCapture.start()
+        playButton.isEnabled = false
+        pauseButton.isEnabled = true
+    }
+    
+    @objc func pauseTapped() {
+        selection.selectionChanged()
+        self.videoCapture.stop()
+        playButton.isEnabled = true
+        pauseButton.isEnabled = false
+    }
+    
+    @objc func switchCameraTapped() {
+        
+        self.videoCapture.captureSession.beginConfiguration()
+        let currentInput = self.videoCapture.captureSession.inputs.first as? AVCaptureDeviceInput
+        self.videoCapture.captureSession.removeInput(currentInput!)
+        guard let currentPosition = currentInput?.device.position else { return }
+        
+        let nextCameraPosition: AVCaptureDevice.Position = currentPosition == .back ? .front : .back
+        
+        let newCameraDevice = bestCaptureDevice(position: nextCameraPosition)
+        
+        guard let videoInput1 = try? AVCaptureDeviceInput(device: newCameraDevice) else {
+            return
+        }
+        
+        self.videoCapture.captureSession.addInput(videoInput1)
+        var orientation: AVCaptureVideoOrientation = .portrait
+        switch UIDevice.current.orientation {
+        case .portrait:
+            orientation = .portrait
+        case .portraitUpsideDown:
+            orientation = .portraitUpsideDown
+        case .landscapeRight:
+            orientation = .landscapeLeft
+        case .landscapeLeft:
+            orientation = .landscapeRight
+        default:
+          return
+        }
+        self.videoCapture.updateVideoOrientation(orientation: orientation)
+        
+        self.videoCapture.captureSession.commitConfiguration()
+    }
 }
 
 
