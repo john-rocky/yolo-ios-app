@@ -228,7 +228,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
                 if ratio >= 1 {
                     let offset = (1 - ratio) * (0.5 - displayRect.minX)
                     if task == .detect {
-                        let transform = CGAffineTransform(scaleX: 1, y: 1).translatedBy(x: offset, y: 1)
+                        let transform = CGAffineTransform(scaleX: 1, y: 1).translatedBy(x: offset, y: -1)
                         displayRect = displayRect.applying(transform)
                     } else {
                         let transform = CGAffineTransform(translationX: offset, y: 0)
