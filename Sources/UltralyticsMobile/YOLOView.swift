@@ -58,8 +58,8 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         modelPathOrName: String,
         task: YOLOTask) {
             self.videoCapture = VideoCapture()
-
             super.init(frame: frame)
+            setupModel(modelPathOrName: modelPathOrName, task: task)
             self.setUpBoundingBoxViews()
             self.setupUI()
             self.videoCapture.delegate = self
