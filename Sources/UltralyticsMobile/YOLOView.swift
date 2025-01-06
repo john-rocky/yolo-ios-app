@@ -281,6 +281,11 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         slider.addTarget(self, action: #selector(sliderChanged), for: .valueChanged)
         self.addSubview(slider)
         
+        labelSliderConf = UILabel()
+        labelSliderConf.text = "Label"
+        labelSliderConf.textAlignment = .center
+        labelSliderConf.textColor = .black
+        self.addSubview(labelSlider)
         sliderConf = UISlider()
         sliderConf.minimumValue = 0
         sliderConf.maximumValue = 1
@@ -290,6 +295,10 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         sliderConf.addTarget(self, action: #selector(sliderChanged), for: .valueChanged)
         self.addSubview(sliderConf)
         
+        labelSliderIoU = UILabel()
+        labelSliderIoU.text = "Label"
+        labelSliderIoU.textAlignment = .center
+        labelSliderIoU.textColor = .black
         sliderIoU = UISlider()
         sliderIoU.minimumValue = 0
         sliderIoU.maximumValue = 1
@@ -335,23 +344,44 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         let sliderWidth: CGFloat = width * 0.45
         let sliderHeight: CGFloat = height * 0.05
         
-        slider.frame = CGRect(
+        labelSlider.frame = CGRect(
             x: width * 0.05,
             y: labelName.frame.maxY + 10,
             width: sliderWidth,
             height: sliderHeight
         )
+
+        slider.frame = CGRect(
+            x: width * 0.05,
+            y: labelSlider.frame.maxY + 10,
+            width: sliderWidth,
+            height: sliderHeight
+        )
         
-        sliderConf.frame = CGRect(
+        labelSliderConf.frame = CGRect(
             x: width * 0.05,
             y: slider.frame.maxY + 10,
             width: sliderWidth,
             height: sliderHeight
         )
         
-        sliderIoU.frame = CGRect(
+        sliderConf.frame = CGRect(
+            x: width * 0.05,
+            y: labelSliderConf.frame.maxY + 10,
+            width: sliderWidth,
+            height: sliderHeight
+        )
+        
+        labelSliderIoU.frame = CGRect(
             x: width * 0.05,
             y: sliderConf.frame.maxY + 10,
+            width: sliderWidth,
+            height: sliderHeight
+        )
+        
+        sliderIoU.frame = CGRect(
+            x: width * 0.05,
+            y: labelSliderIoU.frame.maxY + 10,
             width: sliderWidth,
             height: sliderHeight
         )
