@@ -137,7 +137,7 @@ class ObjectDetector: Predictor {
             t0 = CACurrentMediaTime()  // inference start
             do {
                 if(visionRequest != nil){
-                    try handler.perform([visionRequest!])
+                    try handler.perform([visionRequest])
                 }
             } catch {
                 print(error)
@@ -205,10 +205,10 @@ class ObjectDetector: Predictor {
     
     func predictOnImage(image: CIImage) -> YOLOResult {
         let requestHandler = VNImageRequestHandler(ciImage: image, options: [:])
-        guard let request = visionRequest else {
-            let emptyResult = YOLOResult(orig_shape: inputSize, boxes: [])
-            return emptyResult
-        }
+//        guard let request = visionRequest else {
+//            let emptyResult = YOLOResult(orig_shape: inputSize, boxes: [])
+//            return emptyResult
+//        }
         var boxes = [Box]()
         
         let imageWidth = image.extent.width
