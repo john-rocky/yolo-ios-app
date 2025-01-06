@@ -165,22 +165,13 @@ public class YOLOView: UIView, VideoCaptureDelegate{
             ratio = (height / width) / (16.0 / 9.0)
         }
         
-        let date = Date()
-        let calendar = Calendar.current
-        let hour = calendar.component(.hour, from: date)
-        let minutes = calendar.component(.minute, from: date)
-        let seconds = calendar.component(.second, from: date)
-        let nanoseconds = calendar.component(.nanosecond, from: date)
-        let sec_day =
-        Double(hour) * 3600.0 + Double(minutes) * 60.0 + Double(seconds) + Double(nanoseconds) / 1E9
-        
         var resultCount = 0
         
         switch task {
         case .detect:
             resultCount = predictions.boxes.count
         }
-        //        self.labelSlider.text = String(resultCount) + " items (max " + String(Int(slider.value)) + ")"
+        self.labelSlider.text = String(resultCount) + " items (max " + String(Int(slider.value)) + ")"
         for i in 0..<boundingBoxViews.count {
             if i < (resultCount) && i < 50 {
                 var rect = CGRect.zero
@@ -188,12 +179,12 @@ public class YOLOView: UIView, VideoCaptureDelegate{
                 var boxColor: UIColor = .white
                 var confidence: CGFloat = 0
                 var alpha: CGFloat = 0.9
-                var innerTexts = ""
                 var bestClass = ""
                 switch task {
                 case .detect:
                     let prediction = predictions.boxes[i]
-                    rect = prediction.xywhn
+                    rect = CGRect(x: prediction.xywhn.minX, y: 1-prediction.xywhn.maxY, width: prediction.xywhn.width, height: prediction.xywhn.height)
+                    
                     bestClass = prediction.cls
                     confidence = CGFloat(prediction.conf)
                     label = String(format: "%@ %.1f", bestClass, confidence * 100)
@@ -228,7 +219,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
                 if ratio >= 1 {
                     let offset = (1 - ratio) * (0.5 - displayRect.minX)
                     if task == .detect {
-                        let transform = CGAffineTransform(scaleX: 1, y: 1).translatedBy(x: offset, y: -1)
+                        let transform = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: offset, y: -1)
                         displayRect = displayRect.applying(transform)
                     } else {
                         let transform = CGAffineTransform(translationX: offset, y: 0)
