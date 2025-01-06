@@ -158,6 +158,7 @@ class ObjectDetector: Predictor {
     
     func processObservations(for request: VNRequest, error: Error?) {
             if let results = request.results as? [VNRecognizedObjectObservation] {
+                var result: [String:Any] = [:]
                 var recognitions: [[String:Any]] = []
                 
                 for i in 0..<100 {
@@ -179,8 +180,6 @@ class ObjectDetector: Predictor {
                     }
                 }
                 
-                self.currentOnResultsListener?.on(predictions: recognitions)
-                
                 // Measure FPS
                 if self.t1 < 10.0 {  // valid dt
                     self.t2 = self.t1 * 0.05 + self.t2 * 0.95  // smoothed inference time
@@ -190,6 +189,11 @@ class ObjectDetector: Predictor {
 
                 self.currentOnInferenceTimeListener?.on(inferenceTime: self.t2 * 1000)  // t2 seconds to ms
                 self.currentOnFpsRateListener?.on(fpsRate: 1 / self.t4)
+                result["recognitions"] = recognitions
+                result["speed"] = self.t2 * 1000
+                result["fps"] = 1 / self.t4
+                self.currentOnResultsListener?.on(result: result)
+
             }
     }
     

@@ -2,7 +2,7 @@ import Vision
 import CoreImage
 
 protocol ResultsListener {
-    func on(predictions: [[String:Any]])
+    func on(result: [String:Any])
 }
 
 protocol InferenceTimeListener {

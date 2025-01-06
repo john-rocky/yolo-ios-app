@@ -19,6 +19,11 @@ public class YOLOView: UIView, VideoCaptureDelegate{
             let box = Box(index: index, cls: bestClass, conf: Float(confidence), xywh: imageBox, xywhn: invertBox)
             boxes.append(box)
         }
+        let speed = result.speed
+        let fps = result.fps
+        DispatchQueue.main.async {
+            self.labelFPS.text = String(format: "%.1f FPS - %.1f ms", fps, speed)  // t2 seconds to ms
+        }
         let result = YOLOResult(orig_shape: CGSize(width: 1280, height: 720), boxes: boxes)
         onDetection?(result)
     }
@@ -268,7 +273,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         
         labelSlider = UILabel()
         labelSlider.text = "Label"
-        labelSlider.textAlignment = .center
+        labelSlider.textAlignment = .left
         labelSlider.textColor = .black
         self.addSubview(labelSlider)
         
@@ -283,9 +288,10 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         
         labelSliderConf = UILabel()
         labelSliderConf.text = "Label"
-        labelSliderConf.textAlignment = .center
+        labelSliderConf.textAlignment = .left
         labelSliderConf.textColor = .black
-        self.addSubview(labelSlider)
+        self.addSubview(labelSliderConf)
+        
         sliderConf = UISlider()
         sliderConf.minimumValue = 0
         sliderConf.maximumValue = 1
@@ -297,8 +303,10 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         
         labelSliderIoU = UILabel()
         labelSliderIoU.text = "Label"
-        labelSliderIoU.textAlignment = .center
+        labelSliderIoU.textAlignment = .left
         labelSliderIoU.textColor = .black
+        self.addSubview(labelSliderIoU)
+
         sliderIoU = UISlider()
         sliderIoU.minimumValue = 0
         sliderIoU.maximumValue = 1

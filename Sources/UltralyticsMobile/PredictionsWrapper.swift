@@ -6,5 +6,7 @@
 //
 
 struct PredictionsWrapper:@unchecked Sendable {
+    let fps: Double
+    let speed: Double
     let predictions: [[String: Any]]
 }
