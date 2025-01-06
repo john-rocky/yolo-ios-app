@@ -7,9 +7,31 @@ public class YOLO {
     var yoloView: YOLOView?
     
     public init(_ modelPathOrName: String, task: YOLOTask) {
+        var modelURL: URL?
+        
+        let lowercasedPath = modelPathOrName.lowercased()
+        let fileManager = FileManager.default
+        
+        if lowercasedPath.hasSuffix(".mlmodel") || lowercasedPath.hasSuffix(".mlpackage") {
+            let possibleURL = URL(fileURLWithPath: modelPathOrName)
+            if fileManager.fileExists(atPath: possibleURL.path) {
+                modelURL = possibleURL
+            }
+        } else {
+            if let compiledURL = Bundle.main.url(forResource: modelPathOrName, withExtension: "mlmodelc") {
+                modelURL = compiledURL
+            } else if let packageURL = Bundle.main.url(forResource: modelPathOrName, withExtension: "mlpackage") {
+                modelURL = packageURL
+            }
+        }
+        
+        guard let unwrappedModelURL = modelURL else {
+            fatalError(PredictorError.modelFileNotFound.localizedDescription)
+        }
+
         switch task {
         case .detect:
-            predictor = ObjectDetector(unwrappedModelURL: modelPathOrName)
+            predictor = ObjectDetector(unwrappedModelURL: unwrappedModelURL)
         }
     }
     
