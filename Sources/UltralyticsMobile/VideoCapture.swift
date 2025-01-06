@@ -160,6 +160,20 @@ class VideoCapture: NSObject,@unchecked Sendable {
             currentBuffer = nil
         }
     }
+    
+    func updateVideoOrientation(orientation:AVCaptureVideoOrientation) {
+      guard let connection = videoOutput.connection(with: .video) else { return }
+
+        connection.videoOrientation = orientation
+      let currentInput = self.captureSession.inputs.first as? AVCaptureDeviceInput
+      if currentInput?.device.position == .front {
+        connection.isVideoMirrored = true
+      } else {
+        connection.isVideoMirrored = false
+      }
+
+      self.previewLayer?.connection?.videoOrientation = connection.videoOrientation
+    }
 }
 
 extension VideoCapture: AVCaptureVideoDataOutputSampleBufferDelegate {

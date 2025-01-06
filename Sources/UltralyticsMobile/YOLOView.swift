@@ -74,10 +74,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
             self.setupUI()
             self.videoCapture.delegate = self
             start(position: .back)
-            
-            let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:)))
-            self.addGestureRecognizer(pinchGesture)
-            
+                        
             NotificationCenter.default.addObserver(
                 self,
                 selector: #selector(orientationDidChange),
@@ -376,7 +373,20 @@ public class YOLOView: UIView, VideoCaptureDelegate{
     }
     
     @objc func orientationDidChange() {
-        videoCapture.updateVideoOrientation()
+        var orientation: AVCaptureVideoOrientation = .portrait
+        switch UIDevice.current.orientation {
+        case .portrait:
+            orientation = .portrait
+        case .portraitUpsideDown:
+            orientation = .portraitUpsideDown
+        case .landscapeRight:
+            orientation = .landscapeLeft
+        case .landscapeLeft:
+            orientation = .landscapeRight
+        default:
+          return
+        }
+        videoCapture.updateVideoOrientation(orientation:orientation)
         //      frameSizeCaptured = false
     }
     
