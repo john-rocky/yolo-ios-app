@@ -427,7 +427,8 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         
         if let sender = sliderConf {
             if let detector = videoCapture.predictor as? ObjectDetector {
-                detector.setNumItemsThreshold(numItems: Int(sender.value))
+                let numItems = Int(sender.value)
+                detector.setNumItemsThreshold(numItems: numItems)
             }
         }
         let conf = Double(round(100 * sliderConf.value)) / 100
