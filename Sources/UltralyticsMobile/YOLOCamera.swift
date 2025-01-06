@@ -17,29 +17,15 @@ public struct YOLOCamera: View {
         self.task = task
         self.cameraPosition = cameraPosition
     }
-
+    
     
     public var body: some View {
-        ZStack {
-            YOLOViewRepresentable(
-                modelPathOrName: modelPathOrName,
-                task: task,
-                cameraPosition: cameraPosition
-            ) { result in
-                self.yoloResult = result
-            }
-            
-            if let boxes = yoloResult?.boxes {
-                VStack {
-                    Text("Count: \(boxes.count)")
-                        .padding()
-                        .background(Color.black.opacity(0.5))
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                    Spacer()
-                }
-                .padding()
-            }
+        YOLOViewRepresentable(
+            modelPathOrName: modelPathOrName,
+            task: task,
+            cameraPosition: cameraPosition
+        ) { result in
+            self.yoloResult = result
         }
     }
 }

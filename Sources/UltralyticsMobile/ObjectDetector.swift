@@ -4,17 +4,7 @@ import UIKit
 
 class ObjectDetector: Predictor {
     private var detector: VNCoreMLModel!
-    private lazy var visionRequest: VNCoreMLRequest = {
-      let request = VNCoreMLRequest(
-        model: detector,
-        completionHandler: {
-          [weak self] request, error in
-          self?.processObservations(for: request, error: error)
-        })
-      // NOTE: BoundingBoxView object scaling depends on request.imageCropAndScaleOption https://developer.apple.com/documentation/vision/vnimagecropandscaleoption
-      request.imageCropAndScaleOption = .scaleFill  // .scaleFit, .scaleFill, .centerCrop
-      return request
-    }()
+    private var visionRequest: VNCoreMLRequest?
     private var currentBuffer: CVPixelBuffer?
     private var currentOnResultsListener: ResultsListener?
     private var currentOnInferenceTimeListener: InferenceTimeListener?
@@ -137,7 +127,7 @@ class ObjectDetector: Predictor {
             t0 = CACurrentMediaTime()  // inference start
             do {
                 if(visionRequest != nil){
-                    try handler.perform([visionRequest])
+                    try handler.perform([visionRequest!])
                 }
             } catch {
                 print(error)
@@ -205,10 +195,10 @@ class ObjectDetector: Predictor {
     
     func predictOnImage(image: CIImage) -> YOLOResult {
         let requestHandler = VNImageRequestHandler(ciImage: image, options: [:])
-//        guard let request = visionRequest else {
-//            let emptyResult = YOLOResult(orig_shape: inputSize, boxes: [])
-//            return emptyResult
-//        }
+        guard let request = visionRequest else {
+            let emptyResult = YOLOResult(orig_shape: inputSize, boxes: [])
+            return emptyResult
+        }
         var boxes = [Box]()
         
         let imageWidth = image.extent.width
@@ -216,8 +206,8 @@ class ObjectDetector: Predictor {
         self.inputSize = CGSize(width: imageWidth, height: imageHeight)
         
         do {
-            try requestHandler.perform([visionRequest])
-            if let results = visionRequest.results as? [VNRecognizedObjectObservation] {
+            try requestHandler.perform([request])
+            if let results = request.results as? [VNRecognizedObjectObservation] {
                 for i in 0..<100 {
                     if i < results.count && i < self.numItemsThreshold {
                         let prediction = results[i]
