@@ -9,7 +9,7 @@ public class YOLO {
     public init(_ modelPathOrName: String, task: YOLOTask) {
         switch task {
         case .detect:
-            predictor = ObjectDetector(modelPathOrName: modelPathOrName)
+            predictor = ObjectDetector(unwrappedModelURL: modelPathOrName)
         }
     }
     

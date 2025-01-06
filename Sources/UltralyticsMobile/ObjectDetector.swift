@@ -18,29 +18,9 @@ class ObjectDetector: Predictor {
     var t4 = 0.0  // FPS dt smoothed
     private var isSync = false
     
-    init(modelPathOrName: String) {
+    init(unwrappedModelURL: URL) {
         
-        var modelURL: URL?
-        
-        let lowercasedPath = modelPathOrName.lowercased()
-        let fileManager = FileManager.default
-        
-        if lowercasedPath.hasSuffix(".mlmodel") || lowercasedPath.hasSuffix(".mlpackage") {
-            let possibleURL = URL(fileURLWithPath: modelPathOrName)
-            if fileManager.fileExists(atPath: possibleURL.path) {
-                modelURL = possibleURL
-            }
-        } else {
-            if let compiledURL = Bundle.main.url(forResource: modelPathOrName, withExtension: "mlmodelc") {
-                modelURL = compiledURL
-            } else if let packageURL = Bundle.main.url(forResource: modelPathOrName, withExtension: "mlpackage") {
-                modelURL = packageURL
-            }
-        }
-        
-        guard let unwrappedModelURL = modelURL else {
-            fatalError(PredictorError.modelFileNotFound.localizedDescription)
-        }
+
         let ext = unwrappedModelURL.pathExtension.lowercased()
         let isCompiled = (ext == "mlmodelc")
         
@@ -185,9 +165,6 @@ class ObjectDetector: Predictor {
 
                 self.currentOnInferenceTimeListener?.on(inferenceTime: self.t2 * 1000)  // t2 seconds to ms
                 self.currentOnFpsRateListener?.on(fpsRate: 1 / self.t4)
-//                result["recognitions"] = recognitions
-//                result["speed"] = self.t2 * 1000
-//                result["fps"] = 1 / self.t4
                 let result = YOLOResult(orig_shape: inputSize, boxes: boxes, speed: self.t2, fps: 1 / self.t4)
 
                 self.currentOnResultsListener?.on(result: result)

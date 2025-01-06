@@ -6,19 +6,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
     
     
     func onPredict(result: YOLOResult) {
-//        let predictions = result.boxes
         showBoxes(predictions: result)
-//        var boxes: [Box] = []
-//        for prediction in predictions {
-//            let rect = prediction["box"] as! CGRect
-//            let bestClass = prediction["label"] as! String
-//            let confidence = CGFloat(prediction["confidence"] as! VNConfidence)
-//            let index = self.predictor.labels.firstIndex(of: bestClass) ?? 0
-//            let invertBox = CGRect(x: rect.minX, y: 1-rect.maxY, width: rect.width, height: rect.height)
-//            let imageBox = VNImageRectForNormalizedRect(invertBox, Int(1280), Int(720))
-//            let box = Box(index: index, cls: bestClass, conf: Float(confidence), xywh: imageBox, xywhn: invertBox)
-//            boxes.append(box)
-//        }
         let speed = result.speed
         var fps: Double = 0
         if let fpsResult = result.fps {
@@ -27,7 +15,6 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         DispatchQueue.main.async {
             self.labelFPS.text = String(format: "%.1f FPS - %.1f ms", fps, speed)  // t2 seconds to ms
         }
-//        let result = YOLOResult(orig_shape: CGSize(width: 1280, height: 720), boxes: boxes, speed: <#Double#>)
         onDetection?(result)
     }
     
@@ -47,8 +34,8 @@ public class YOLOView: UIView, VideoCaptureDelegate{
     var classes: [String] = []
     let maxBoundingBoxViews = 100
     var boundingBoxViews = [BoundingBoxView]()
-    public var slider: UISlider!
-    public var labelSlider: UILabel!
+    public var sliderNumItems: UISlider!
+    public var labelSliderNumItems: UILabel!
     public var sliderConf: UISlider!
     public var labelSliderConf: UILabel!
     public var sliderIoU: UISlider!
@@ -70,13 +57,8 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         frame: CGRect,
         modelPathOrName: String,
         task: YOLOTask) {
-            
-            switch task {
-            case .detect:
-                predictor = ObjectDetector(modelPathOrName: modelPathOrName)
-            }
             self.videoCapture = VideoCapture()
-            videoCapture.predictor = predictor
+
             super.init(frame: frame)
             self.setUpBoundingBoxViews()
             self.setupUI()
@@ -93,6 +75,40 @@ public class YOLOView: UIView, VideoCaptureDelegate{
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func setupModel(modelPathOrName: String,
+                            task: YOLOTask) {
+        var modelURL: URL?
+        
+        let lowercasedPath = modelPathOrName.lowercased()
+        let fileManager = FileManager.default
+        
+        if lowercasedPath.hasSuffix(".mlmodel") || lowercasedPath.hasSuffix(".mlpackage") {
+            let possibleURL = URL(fileURLWithPath: modelPathOrName)
+            if fileManager.fileExists(atPath: possibleURL.path) {
+                modelURL = possibleURL
+            }
+        } else {
+            if let compiledURL = Bundle.main.url(forResource: modelPathOrName, withExtension: "mlmodelc") {
+                modelURL = compiledURL
+            } else if let packageURL = Bundle.main.url(forResource: modelPathOrName, withExtension: "mlpackage") {
+                modelURL = packageURL
+            }
+        }
+        
+        guard let unwrappedModelURL = modelURL else {
+            fatalError(PredictorError.modelFileNotFound.localizedDescription)
+        }
+        
+        let modelName = unwrappedModelURL.deletingPathExtension().lastPathComponent
+        self.labelName.text = modelName
+        switch task {
+        case .detect:
+            predictor = ObjectDetector(unwrappedModelURL: unwrappedModelURL)
+        }
+        videoCapture.predictor = predictor
+
     }
     
     
@@ -171,7 +187,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         case .detect:
             resultCount = predictions.boxes.count
         }
-        self.labelSlider.text = String(resultCount) + " items (max " + String(Int(slider.value)) + ")"
+        self.labelSliderNumItems.text = String(resultCount) + " items (max " + String(Int(sliderNumItems.value)) + ")"
         for i in 0..<boundingBoxViews.count {
             if i < (resultCount) && i < 50 {
                 var rect = CGRect.zero
@@ -265,20 +281,20 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         labelFPS.textColor = .black
         self.addSubview(labelFPS)
         
-        labelSlider = UILabel()
-        labelSlider.text = "Label"
-        labelSlider.textAlignment = .left
-        labelSlider.textColor = .black
-        self.addSubview(labelSlider)
+        labelSliderNumItems = UILabel()
+        labelSliderNumItems.text = "Label"
+        labelSliderNumItems.textAlignment = .left
+        labelSliderNumItems.textColor = .black
+        self.addSubview(labelSliderNumItems)
         
-        slider = UISlider()
-        slider.minimumValue = 0
-        slider.maximumValue = 100
-        slider.value = 30
-        slider.minimumTrackTintColor = .darkGray
-        slider.maximumTrackTintColor = .lightGray.withAlphaComponent(0.5)
-        slider.addTarget(self, action: #selector(sliderChanged), for: .valueChanged)
-        self.addSubview(slider)
+        sliderNumItems = UISlider()
+        sliderNumItems.minimumValue = 0
+        sliderNumItems.maximumValue = 100
+        sliderNumItems.value = 30
+        sliderNumItems.minimumTrackTintColor = .darkGray
+        sliderNumItems.maximumTrackTintColor = .lightGray.withAlphaComponent(0.5)
+        sliderNumItems.addTarget(self, action: #selector(sliderChanged), for: .valueChanged)
+        self.addSubview(sliderNumItems)
         
         labelSliderConf = UILabel()
         labelSliderConf.text = "Label"
@@ -309,6 +325,11 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         sliderIoU.maximumTrackTintColor = .lightGray.withAlphaComponent(0.5)
         sliderIoU.addTarget(self, action: #selector(sliderChanged), for: .valueChanged)
         self.addSubview(sliderIoU)
+        
+        self.labelSliderNumItems.text = "0 items (max " + String(Int(sliderNumItems.value)) + ")"
+        self.labelSliderConf.text = "0.25 Confidence Threshold"
+        self.labelSliderIoU.text = "0.45 IoU Threshold"
+
         
         labelZoom = UILabel()
         labelZoom.text = "1.00x"
@@ -347,30 +368,30 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         let sliderWidth: CGFloat = width * 0.45
         let sliderHeight: CGFloat = height * 0.05
         
-        labelSlider.frame = CGRect(
+        labelSliderNumItems.frame = CGRect(
             x: width * 0.05,
-            y: labelName.frame.maxY + 10,
+            y: labelName.frame.maxY + 20,
             width: sliderWidth,
             height: sliderHeight
         )
 
-        slider.frame = CGRect(
+        sliderNumItems.frame = CGRect(
             x: width * 0.05,
-            y: labelSlider.frame.maxY + 10,
+            y: labelSliderNumItems.frame.maxY + 5,
             width: sliderWidth,
             height: sliderHeight
         )
         
         labelSliderConf.frame = CGRect(
             x: width * 0.05,
-            y: slider.frame.maxY + 10,
-            width: sliderWidth,
+            y: sliderNumItems.frame.maxY + 10,
+            width: sliderWidth * 1.5,
             height: sliderHeight
         )
         
         sliderConf.frame = CGRect(
             x: width * 0.05,
-            y: labelSliderConf.frame.maxY + 10,
+            y: labelSliderConf.frame.maxY + 5,
             width: sliderWidth,
             height: sliderHeight
         )
@@ -378,13 +399,13 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         labelSliderIoU.frame = CGRect(
             x: width * 0.05,
             y: sliderConf.frame.maxY + 10,
-            width: sliderWidth,
+            width: sliderWidth * 1.5,
             height: sliderHeight
         )
         
         sliderIoU.frame = CGRect(
             x: width * 0.05,
-            y: labelSliderIoU.frame.maxY + 10,
+            y: labelSliderIoU.frame.maxY + 5,
             width: sliderWidth,
             height: sliderHeight
         )
@@ -425,7 +446,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
     
     @objc func sliderChanged(_ sender: Any) {
         
-        if let sender = sliderConf {
+        if let sender = sliderNumItems {
             if let detector = videoCapture.predictor as? ObjectDetector {
                 let numItems = Int(sender.value)
                 detector.setNumItemsThreshold(numItems: numItems)
