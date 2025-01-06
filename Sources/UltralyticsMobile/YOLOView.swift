@@ -39,17 +39,24 @@ public class YOLOView: UIView, VideoCaptureDelegate{
     var classes: [String] = []
     let maxBoundingBoxViews = 100
     var boundingBoxViews = [BoundingBoxView]()
-    var slider: UISlider!
-    var labelSlider: UILabel!
-    var sliderConf: UISlider!
-    var labelSliderConf: UILabel!
-    var sliderIoU: UISlider!
-    var labelSliderIoU: UILabel!
-    var labelName: UILabel!
-    var labelFPS: UILabel!
-    var labelZoom: UILabel!
-    var activityIndicator: UIActivityIndicatorView!
-    var toolBar: UIToolbar!
+    public var slider: UISlider!
+    public var labelSlider: UILabel!
+    public var sliderConf: UISlider!
+    public var labelSliderConf: UILabel!
+    public var sliderIoU: UISlider!
+    public var labelSliderIoU: UILabel!
+    public var labelName: UILabel!
+    public var labelFPS: UILabel!
+    public var labelZoom: UILabel!
+    public var activityIndicator: UIActivityIndicatorView!
+    public var toolBar: UIToolbar!
+    public var playButton: UIBarButtonItem!
+    public var pauseButton: UIBarButtonItem!
+    public var switchCameraButton: UIBarButtonItem!
+    
+    private let minimumZoom: CGFloat = 1.0
+    private let maximumZoom: CGFloat = 10.0
+    private var lastZoomFactor: CGFloat = 1.0
     
     public init(
         frame: CGRect,
@@ -67,6 +74,16 @@ public class YOLOView: UIView, VideoCaptureDelegate{
             self.setupUI()
             self.videoCapture.delegate = self
             start(position: .back)
+            
+            let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:)))
+            self.addGestureRecognizer(pinchGesture)
+            
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(orientationDidChange),
+                name: UIDevice.orientationDidChangeNotification,
+                object: nil
+            )
         }
     
     required init?(coder: NSCoder) {
@@ -243,38 +260,55 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         labelName.text = "Label"
         labelName.textAlignment = .center
         labelName.font = UIFont.systemFont(ofSize: 24, weight: .bold)
-        labelName.textColor = .white
+        labelName.textColor = .black
         self.addSubview(labelName)
         
         labelFPS = UILabel()
         labelFPS.text = "Label"
         labelFPS.textAlignment = .center
-        labelFPS.textColor = .white
+        labelFPS.textColor = .black
         self.addSubview(labelFPS)
+        
+        labelSlider = UILabel()
+        labelSlider.text = "Label"
+        labelSlider.textAlignment = .center
+        labelSlider.textColor = .black
+        self.addSubview(labelSlider)
         
         slider = UISlider()
         slider.minimumValue = 0
         slider.maximumValue = 100
         slider.value = 30
+        slider.minimumTrackTintColor = .darkGray
+        slider.maximumTrackTintColor = .lightGray.withAlphaComponent(0.5)
+        slider.addTarget(self, action: #selector(sliderChanged), for: .valueChanged)
         self.addSubview(slider)
         
         sliderConf = UISlider()
         sliderConf.minimumValue = 0
         sliderConf.maximumValue = 1
         sliderConf.value = 0.25
+        sliderConf.minimumTrackTintColor = .darkGray
+        sliderConf.maximumTrackTintColor = .lightGray.withAlphaComponent(0.5)
+        sliderConf.addTarget(self, action: #selector(sliderChanged), for: .valueChanged)
         self.addSubview(sliderConf)
         
         sliderIoU = UISlider()
         sliderIoU.minimumValue = 0
         sliderIoU.maximumValue = 1
         sliderIoU.value = 0.45
+        sliderIoU.minimumTrackTintColor = .darkGray
+        sliderIoU.maximumTrackTintColor = .lightGray.withAlphaComponent(0.5)
+        sliderIoU.addTarget(self, action: #selector(sliderChanged), for: .valueChanged)
         self.addSubview(sliderIoU)
         
         labelZoom = UILabel()
         labelZoom.text = "1.00x"
-        labelZoom.textColor = .white
+        labelZoom.textColor = .black
         labelZoom.font = UIFont.systemFont(ofSize: 14)
         self.addSubview(labelZoom)
+        
+        self.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(pinch)))
     }
     
     public override func layoutSubviews() {
@@ -328,13 +362,74 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         
         let zoomLabelWidth: CGFloat = width * 0.2
         labelZoom.frame = CGRect(
-            x: width - zoomLabelWidth - 16,
+            x: center.x - zoomLabelWidth / 2,
             y: self.bounds.maxY - 40,
             width: zoomLabelWidth,
             height: height * 0.03
         )
     }
     
+    private func setUpOrientationChangeNotification() {
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(orientationDidChange),
+            name: UIDevice.orientationDidChangeNotification, object: nil)
+    }
+    
+    @objc func orientationDidChange() {
+        videoCapture.updateVideoOrientation()
+        //      frameSizeCaptured = false
+    }
+    
+    @objc func sliderChanged(_ sender: Any) {
+        if let sender = sliderConf {
+            if let detector = videoCapture.predictor as? ObjectDetector {
+                detector.setNumItemsThreshold(numItems: Int(sender.value))
+            }
+        }
+        let conf = Double(round(100 * sliderConf.value)) / 100
+        let iou = Double(round(100 * sliderIoU.value)) / 100
+        self.labelSliderConf.text = String(conf) + " Confidence Threshold"
+        self.labelSliderIoU.text = String(iou) + " IoU Threshold"
+        if let detector = videoCapture.predictor as? ObjectDetector {
+            detector.setIouThreshold(iou: iou)
+            detector.setConfidenceThreshold(confidence: conf)
+            
+        }
+    }
+    
+    @objc func pinch(_ pinch: UIPinchGestureRecognizer) {
+        guard let device = videoCapture.captureDevice else { return }
+
+      // Return zoom value between the minimum and maximum zoom values
+      func minMaxZoom(_ factor: CGFloat) -> CGFloat {
+        return min(min(max(factor, minimumZoom), maximumZoom), device.activeFormat.videoMaxZoomFactor)
+      }
+
+      func update(scale factor: CGFloat) {
+        do {
+          try device.lockForConfiguration()
+          defer {
+            device.unlockForConfiguration()
+          }
+          device.videoZoomFactor = factor
+        } catch {
+          print("\(error.localizedDescription)")
+        }
+      }
+
+      let newScaleFactor = minMaxZoom(pinch.scale * lastZoomFactor)
+      switch pinch.state {
+      case .began, .changed:
+        update(scale: newScaleFactor)
+        self.labelZoom.text = String(format: "%.2fx", newScaleFactor)
+        self.labelZoom.font = UIFont.preferredFont(forTextStyle: .title2)
+      case .ended:
+        lastZoomFactor = minMaxZoom(newScaleFactor)
+        update(scale: lastZoomFactor)
+        self.labelZoom.font = UIFont.preferredFont(forTextStyle: .body)
+      default: break
+      }
+    }  // Pin
 }
 
 
