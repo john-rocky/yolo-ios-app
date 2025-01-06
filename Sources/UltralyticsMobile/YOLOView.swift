@@ -339,6 +339,8 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         self.addSubview(labelZoom)
         
         toolBar = UIToolbar()
+        toolBar.tintColor = .darkGray
+        toolBar.barTintColor = .lightGray.withAlphaComponent(0.5)
         playButton = UIBarButtonItem(
             image: UIImage(systemName: "play.fill"),
             style: .plain,
@@ -358,26 +360,10 @@ public class YOLOView: UIView, VideoCaptureDelegate{
             action: #selector(switchCameraTapped)
         )
         
-        playButton.setTitleTextAttributes(
-            [NSAttributedString.Key.foregroundColor: UIColor.lightGray],
-            for: .normal
-        )
-        playButton.setTitleTextAttributes(
-            [NSAttributedString.Key.foregroundColor: UIColor.darkGray],
-            for: .disabled
-        )
-        pauseButton.setTitleTextAttributes(
-            [NSAttributedString.Key.foregroundColor: UIColor.lightGray],
-            for: .normal
-        )
-        pauseButton.setTitleTextAttributes(
-            [NSAttributedString.Key.foregroundColor: UIColor.darkGray],
-            for: .disabled
-        )
-        switchCameraButton.setTitleTextAttributes(
-            [NSAttributedString.Key.foregroundColor: UIColor.lightGray],
-            for: .normal
-        )
+        playButton.tintColor = .darkGray
+        pauseButton.tintColor = .darkGray
+        switchCameraButton.tintColor = .darkGray
+
         playButton.isEnabled = false
         pauseButton.isEnabled = true
 
