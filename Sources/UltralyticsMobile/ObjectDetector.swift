@@ -20,16 +20,16 @@ class ObjectDetector: Predictor {
     
     init(unwrappedModelURL: URL) {
         
-
         let ext = unwrappedModelURL.pathExtension.lowercased()
         let isCompiled = (ext == "mlmodelc")
-        
+        let config = MLModelConfiguration()
+        config.setValue(1, forKey: "experimentalMLE5EngineUsage")
         var mlModel: MLModel
         do {
             if isCompiled {
-                mlModel = try MLModel(contentsOf: unwrappedModelURL)
+                mlModel = try MLModel(contentsOf: unwrappedModelURL,configuration: config)
             } else {
-                let compiledUrl = try MLModel.compileModel(at: unwrappedModelURL)
+                let compiledUrl = try MLModel.compileModel(at: unwrappedModelURL,configuration: config)
                 mlModel = try MLModel(contentsOf: compiledUrl)
             }
         } catch {
