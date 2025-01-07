@@ -19,7 +19,7 @@ let package = Package(
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "UltralyticsMobile",
-            resources: [.process("yourModel.mlmodelc")]),
+            resources: [.process("yolo11n.mlmodelc")]),
         .testTarget(
             name: "UltralyticsMobileTests",
             dependencies: ["UltralyticsMobile"]
