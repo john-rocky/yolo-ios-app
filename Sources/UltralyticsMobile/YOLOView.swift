@@ -451,7 +451,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
             height: height * 0.03
         )
         
-        let toolBarHeight: CGFloat = 44
+        let toolBarHeight: CGFloat = 66
         toolBar.frame = CGRect(
             x: 0,
             y: height - toolBarHeight,
