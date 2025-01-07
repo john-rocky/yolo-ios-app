@@ -2,9 +2,9 @@
   {
     "metadataOutputVersion" : "3.0",
     "userDefinedMetadata" : {
-      "stride" : "32",
-      "Confidence threshold" : "0.25",
       "IoU threshold" : "0.45",
+      "Confidence threshold" : "0.25",
+      "stride" : "32",
       "docs" : "https:\/\/docs.ultralytics.com",
       "task" : "detect",
       "date" : "2024-10-27T23:08:18.209304",
