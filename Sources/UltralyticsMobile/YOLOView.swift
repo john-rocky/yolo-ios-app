@@ -4,7 +4,6 @@ import AVFoundation
 
 public class YOLOView: UIView, VideoCaptureDelegate{
     
-    
     func onPredict(result: YOLOResult) {
         showBoxes(predictions: result)
         let speed = result.speed
