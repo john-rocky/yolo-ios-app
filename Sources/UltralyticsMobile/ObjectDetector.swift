@@ -29,8 +29,8 @@ class ObjectDetector: Predictor {
             if isCompiled {
                 mlModel = try MLModel(contentsOf: unwrappedModelURL,configuration: config)
             } else {
-                let compiledUrl = try MLModel.compileModel(at: unwrappedModelURL,configuration: config)
-                mlModel = try MLModel(contentsOf: compiledUrl)
+                let compiledUrl = try MLModel.compileModel(at: unwrappedModelURL)
+                mlModel = try MLModel(contentsOf: compiledUrl,configuration: config)
             }
         } catch {
             fatalError(PredictorError.modelFileNotFound.localizedDescription)
