@@ -44,10 +44,9 @@ public class YOLOView: UIView, VideoCaptureDelegate{
     public var labelFPS: UILabel!
     public var labelZoom: UILabel!
     public var activityIndicator: UIActivityIndicatorView!
-    public var toolBar: UIToolbar!
-    public var playButton: UIBarButtonItem!
-    public var pauseButton: UIBarButtonItem!
-    public var switchCameraButton: UIBarButtonItem!
+    public var playButton: UIButton!
+    public var pauseButton: UIButton!
+    public var switchCameraButton: UIButton!
     let selection = UISelectionFeedbackGenerator()
 
     private let minimumZoom: CGFloat = 1.0
@@ -337,38 +336,24 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         labelZoom.textAlignment = .center
         self.addSubview(labelZoom)
         
-        toolBar = UIToolbar()
-        toolBar.tintColor = .darkGray
-        toolBar.barTintColor = .lightGray.withAlphaComponent(0.5)
-        playButton = UIBarButtonItem(
-            image: UIImage(systemName: "play.fill"),
-            style: .plain,
-            target: self,
-            action: #selector(playTapped)
-        )
-        pauseButton = UIBarButtonItem(
-            image: UIImage(systemName: "pause.fill"),
-            style: .plain,
-            target: self,
-            action: #selector(pauseTapped)
-        )
-        switchCameraButton = UIBarButtonItem(
-            image: UIImage(systemName: "camera.rotate"),
-            style: .plain,
-            target: self,
-            action: #selector(switchCameraTapped)
-        )
-        
+        playButton = UIButton()
+        playButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
         playButton.tintColor = .darkGray
+        pauseButton = UIButton()
+        pauseButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
         pauseButton.tintColor = .darkGray
+        switchCameraButton = UIButton()
+        switchCameraButton.setImage(UIImage(systemName: "camera.rotate"), for: .normal)
         switchCameraButton.tintColor = .darkGray
-
         playButton.isEnabled = false
         pauseButton.isEnabled = true
+        playButton.addTarget(self, action: #selector(playTapped), for: .touchUpInside)
+        pauseButton.addTarget(self, action: #selector(pauseTapped), for: .touchUpInside)
+        switchCameraButton.addTarget(self, action: #selector(switchCameraTapped), for: .touchUpInside)
 
-        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        toolBar.setItems([playButton, pauseButton, flexibleSpace, switchCameraButton], animated: false)
-        self.addSubview(toolBar)
+        self.addSubview(playButton)
+        self.addSubview(pauseButton)
+        self.addSubview(switchCameraButton)
 
         self.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(pinch)))
     }
@@ -451,12 +436,10 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         )
         
         let toolBarHeight: CGFloat = 66
-        toolBar.frame = CGRect(
-            x: 0,
-            y: height - toolBarHeight,
-            width: width,
-            height: toolBarHeight
-        )
+        playButton.frame = CGRect(x: 20, y: height - 66, width: 44, height: 44)
+        pauseButton.frame = CGRect(x: playButton.frame.maxX+20, y: height - 66, width: 44, height: 44)
+        playButton.frame = CGRect(x: width - 64, y: height - 66, width: 44, height: 44)
+
     }
     
     private func setUpOrientationChangeNotification() {
