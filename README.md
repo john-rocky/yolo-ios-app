@@ -146,7 +146,7 @@ We provide fully functional sample apps for each platform to help you get starte
 2. **Real-Time Inference** (e.g., object detection, segmentation, etc.):
    - Includes real-time YOLO inference samples for all platforms.
 
-👉 [Explore the Samples](https://github.com/ultralytics/ultralytics-mobile/samples)
+👉 [Explore the Samples](https://github.com/john-rocky/yolo-ios-app/tree/ultralytics-mobile/examples)
 
 ---
 
