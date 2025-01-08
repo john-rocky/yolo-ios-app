@@ -430,7 +430,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         let zoomLabelWidth: CGFloat = width * 0.2
         labelZoom.frame = CGRect(
             x: center.x - zoomLabelWidth / 2,
-            y: self.bounds.maxY - 40,
+            y: self.bounds.maxY - 88,
             width: zoomLabelWidth,
             height: height * 0.03
         )
@@ -438,7 +438,7 @@ public class YOLOView: UIView, VideoCaptureDelegate{
         let toolBarHeight: CGFloat = 66
         playButton.frame = CGRect(x: 20, y: height - 66, width: 44, height: 44)
         pauseButton.frame = CGRect(x: playButton.frame.maxX+20, y: height - 66, width: 44, height: 44)
-        playButton.frame = CGRect(x: width - 64, y: height - 66, width: 44, height: 44)
+        switchCameraButton.frame = CGRect(x: width - 64, y: height - 66, width: 44, height: 44)
 
     }
     
